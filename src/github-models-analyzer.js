@@ -1,9 +1,9 @@
 import OpenAI from 'openai';
 
 /**
- * 使用 GitHub Models 分析热搜话题
+ * 使用 DeepSeek 免费 API 分析热搜话题
  * @param {object} hotspot - 热搜数据
- * @param {string} apiKey - GitHub Token
+ * @param {string} apiKey - API Key（DeepSeek 或 GitHub Token）
  * @param {string} model - 模型名称
  * @returns {Promise<object>} 分析结果
  */
@@ -45,25 +45,21 @@ export async function analyzeHotspot(hotspot, apiKey, model = 'gpt-4o') {
 `;
 
   try {
-    // 创建 OpenAI 客户端（兼容 OpenAI API）
-    // 优先使用 DeepSeek 免费 API（更稳定）
-    const useDeepSeek = model.includes('deepseek') || model === 'gpt-4o';
+    // 优先使用 DeepSeek API（如果配置了 DEEPSEEK_API_KEY）
+    const deepseekKey = process.env.DEEPSEEK_API_KEY;
+    const useDeepSeek = !!deepseekKey;
     
+    console.log(`  🤖 正在分析: ${hotspot.title}...`);
+    console.log(`  📡 使用 API: ${useDeepSeek ? 'DeepSeek (免费)' : 'GitHub Models'}`);
+
+    // 创建 OpenAI 客户端
     const client = new OpenAI({
-      apiKey: useDeepSeek ? (process.env.DEEPSEEK_API_KEY || apiKey) : apiKey,
-      baseURL: useDeepSeek ? 'https://api.deepseek.com' : 'https://models.inference.ai.azure.com',
-      defaultHeaders: useDeepSeek ? {} : {
-        'api-key': apiKey
-      }
+      apiKey: useDeepSeek ? deepseekKey : apiKey,
+      baseURL: useDeepSeek ? 'https://api.deepseek.com' : 'https://models.inference.ai.azure.com'
     });
 
-    console.log(`  🤖 正在分析: ${hotspot.title}...`);
-    
-    // 根据不同 API 使用不同的模型名称
-    const actualModel = useDeepSeek ? 'deepseek-chat' : model;
-
     const response = await client.chat.completions.create({
-      model: actualModel,
+      model: useDeepSeek ? 'deepseek-chat' : 'gpt-4o',
       messages: [
         {
           role: 'system',
@@ -109,12 +105,18 @@ export async function analyzeHotspot(hotspot, apiKey, model = 'gpt-4o') {
     console.error(`  ❌ 分析失败: ${hotspot.title}`);
     console.error(`     错误: ${error.message}`);
     
+    // 如果是 API 错误，打印更多信息
+    if (error.response) {
+      console.error(`     状态码: ${error.response.status}`);
+      console.error(`     错误详情: ${JSON.stringify(error.response.data)}`);
+    }
+    
     // 返回默认结构，避免中断整个流程
     return {
       ...hotspot,
       analysis: {
         eventTimeline: [
-          { time: '未知', event: '分析失败' }
+          { time: '未知', event: '分析失败: ' + error.message }
         ],
         productIdeas: [
           {
