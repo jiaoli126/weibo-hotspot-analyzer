@@ -47,6 +47,7 @@ jobs:
       - name: 🤖 执行分析任务（GitHub Models）
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # 自动提供，无需配置
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}  # DeepSeek 免费 API
           WEIBO_API_URL: ${{ secrets.WEIBO_API_URL }}
           WEIBO_API_HEADERS: ${{ secrets.WEIBO_API_HEADERS }}
           MAX_HOTSPOTS: ${{ github.event.inputs.max_hotspots || '30' }}

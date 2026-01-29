@@ -45,19 +45,25 @@ export async function analyzeHotspot(hotspot, apiKey, model = 'gpt-4o') {
 `;
 
   try {
-    // 创建 OpenAI 客户端（GitHub Models 兼容 OpenAI API）
+    // 创建 OpenAI 客户端（兼容 OpenAI API）
+    // 优先使用 DeepSeek 免费 API（更稳定）
+    const useDeepSeek = model.includes('deepseek') || model === 'gpt-4o';
+    
     const client = new OpenAI({
-      apiKey: apiKey,
-      baseURL: 'https://models.inference.ai.azure.com', // GitHub Models 端点
-      defaultHeaders: {
+      apiKey: useDeepSeek ? (process.env.DEEPSEEK_API_KEY || apiKey) : apiKey,
+      baseURL: useDeepSeek ? 'https://api.deepseek.com' : 'https://models.inference.ai.azure.com',
+      defaultHeaders: useDeepSeek ? {} : {
         'api-key': apiKey
       }
     });
 
     console.log(`  🤖 正在分析: ${hotspot.title}...`);
+    
+    // 根据不同 API 使用不同的模型名称
+    const actualModel = useDeepSeek ? 'deepseek-chat' : model;
 
     const response = await client.chat.completions.create({
-      model: model,
+      model: actualModel,
       messages: [
         {
           role: 'system',
