@@ -1,0 +1,16 @@
+{
+  "name": "weibo-hotspot-analyzer",
+  "version": "1.0.0",
+  "description": "微博热搜产品创意分析（GitHub Models 免费版）",
+  "type": "module",
+  "scripts": {
+    "analyze": "node src/index.js"
+  },
+  "dependencies": {
+    "openai": "^4.77.3",
+    "axios": "^1.7.9"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

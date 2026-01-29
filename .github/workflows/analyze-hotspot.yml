@@ -1,0 +1,71 @@
+name: 微博热搜产品创意分析（GitHub Models 免费版）
+
+on:
+  # 定时执行：每天早上 9:00 (UTC+8 = UTC 01:00)
+  schedule:
+    - cron: '0 1 * * *'
+  
+  # 手动触发
+  workflow_dispatch:
+    inputs:
+      max_hotspots:
+        description: '分析热搜数量'
+        required: false
+        default: '30'
+      ai_model:
+        description: 'AI 模型'
+        required: false
+        default: 'gpt-4o'
+        type: choice
+        options:
+          - gpt-4o
+          - gpt-4o-mini
+          - deepseek-r1
+          - llama-3-70b
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    
+    permissions:
+      contents: write
+    
+    steps:
+      - name: 📥 Checkout 代码
+        uses: actions/checkout@v4
+      
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: 📦 安装依赖
+        run: npm ci
+      
+      - name: 🤖 执行分析任务（GitHub Models）
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # 自动提供，无需配置
+          WEIBO_API_URL: ${{ secrets.WEIBO_API_URL }}
+          WEIBO_API_HEADERS: ${{ secrets.WEIBO_API_HEADERS }}
+          MAX_HOTSPOTS: ${{ github.event.inputs.max_hotspots || '30' }}
+          AI_MODEL: ${{ github.event.inputs.ai_model || 'gpt-4o' }}
+        run: npm run analyze
+      
+      - name: 📤 上传 HTML 报告
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: weibo-hotspot-report-${{ github.run_number }}
+          path: weibo_hotspot_analysis_*.html
+          retention-days: 30
+      
+      - name: 📊 提交报告到仓库（可选）
+        if: success()
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git add weibo_hotspot_analysis_*.html || true
+          git commit -m "📊 自动生成微博热搜分析报告 - $(date +'%Y-%m-%d %H:%M')" || echo "No changes to commit"
+          git push || echo "Push failed, continuing..."

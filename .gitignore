@@ -1,0 +1,29 @@
+# 依赖
+node_modules/
+package-lock.json
+
+# 环境变量
+.env
+.env.local
+.env.*.local
+
+# 日志
+*.log
+npm-debug.log*
+
+# 生成的报告（可选，如果想提交报告则注释掉下面这行）
+# weibo_hotspot_analysis_*.html
+
+# 操作系统
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 临时文件
+*.tmp
+*.temp
