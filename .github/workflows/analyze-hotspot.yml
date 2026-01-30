@@ -1,9 +1,9 @@
 name: 微博热搜产品创意分析（GitHub Models 免费版）
 
 on:
-  # 定时执行：每天早上 9:00 (UTC+8 = UTC 01:00)
+  # 定时执行：每天早上 9:15 (UTC+8 = UTC 01:15) - 避开整点高峰
   schedule:
-    - cron: '0 1 * * *'
+    - cron: '15 1 * * *'  # 改为 01:15 UTC，避免延迟
   
   # 手动触发
   workflow_dispatch:
