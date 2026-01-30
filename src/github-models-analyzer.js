@@ -103,12 +103,26 @@ export async function analyzeHotspot(hotspot, apiKey, model = 'gpt-4o') {
     
   } catch (error) {
     console.error(`  ❌ 分析失败: ${hotspot.title}`);
-    console.error(`     错误: ${error.message}`);
+    console.error(`     错误类型: ${error.name || 'Unknown'}`);
+    console.error(`     错误信息: ${error.message || 'No message'}`);
     
     // 如果是 API 错误，打印更多信息
     if (error.response) {
-      console.error(`     状态码: ${error.response.status}`);
-      console.error(`     错误详情: ${JSON.stringify(error.response.data)}`);
+      console.error(`     HTTP 状态码: ${error.response.status}`);
+      console.error(`     响应数据: ${JSON.stringify(error.response.data || {})}`);
+    } else if (error.request) {
+      console.error(`     请求已发送但无响应`);
+      console.error(`     请求详情: ${error.request ? 'Request sent' : 'No request'}`);
+    } else {
+      console.error(`     配置错误: ${error.config ? 'Config exists' : 'No config'}`);
+    }
+    
+    // 检查 API Key 配置
+    const deepseekKey = process.env.DEEPSEEK_API_KEY;
+    if (!deepseekKey) {
+      console.error(`     ⚠️  警告: DEEPSEEK_API_KEY 未配置！`);
+    } else {
+      console.error(`     ✓ DEEPSEEK_API_KEY 已配置（长度: ${deepseekKey.length}）`);
     }
     
     // 返回默认结构，避免中断整个流程
