@@ -1,0 +1,2061 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>微博热搜产品创意分析报告</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px;
+            text-align: center;
+            color: white;
+        }
+        .header h1 { font-size: 36px; margin-bottom: 10px; }
+        .header .subtitle { font-size: 18px; opacity: 0.9; }
+        .summary {
+            padding: 30px;
+            background: #f8f9fa;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .summary-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        .summary-card .number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #667eea;
+            display: block;
+        }
+        .summary-card .label { font-size: 14px; color: #666; margin-top: 5px; }
+        .hotspots { padding: 30px; }
+        .hotspot-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+        .hotspot-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        .hotspot-card.excellent {
+            border-color: #4caf50;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+        }
+        .hotspot-card.good {
+            border-color: #2196f3;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        }
+        .hotspot-card.normal {
+            border-color: #9e9e9e;
+            background: #f5f5f5;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .card-header h2 { font-size: 24px; flex: 1; }
+        .card-rank { font-size: 18px; color: #666; margin-right: 20px; }
+        .card-score {
+            font-size: 28px;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 50px;
+            color: white;
+        }
+        .hotspot-card.excellent .card-score { background: #4caf50; }
+        .hotspot-card.good .card-score { background: #2196f3; }
+        .hotspot-card.normal .card-score { background: #9e9e9e; }
+        .hotspot-meta {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #666;
+        }
+        .meta-item .label { font-weight: 500; }
+        .event-timeline {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid #667eea;
+        }
+        .event-timeline h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+        .timeline-item {
+            display: flex;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .timeline-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .timeline-time {
+            font-weight: bold;
+            color: #667eea;
+            min-width: 120px;
+        }
+        .timeline-content { flex: 1; padding-left: 20px; }
+        .product-ideas-section h3 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .product-idea {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border-left: 5px solid #667eea;
+        }
+        .idea-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+        .idea-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        .idea-rating {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+        }
+        .idea-rating.excellent { background: #4caf50; }
+        .idea-rating.good { background: #2196f3; }
+        .idea-rating.normal { background: #9e9e9e; }
+        .idea-section { margin-bottom: 15px; }
+        .idea-section h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        .idea-section p, .idea-section ul {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #444;
+        }
+        .idea-section ul { padding-left: 20px; }
+        .idea-section li { margin-bottom: 5px; }
+        .criteria-breakdown {
+            background: #f5f5f5;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #666;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 微博热搜产品创意分析报告</h1>
+            <p class="subtitle">基于微博实时热搜数据的产品创意挖掘分析（GitHub Models 驱动）</p>
+            <p class="subtitle">生成时间: 2026/01/30 11:22:11</p>
+        </div>
+
+        <div class="summary">
+            <div class="summary-card">
+                <span class="number">30</span>
+                <div class="label">分析热点数</div>
+            </div>
+            <div class="summary-card">
+                <span class="number">30</span>
+                <div class="label">生成创意数</div>
+            </div>
+            <div class="summary-card">
+                <span class="number">0</span>
+                <div class="label">优秀创意 (80+)</div>
+            </div>
+            <div class="summary-card">
+                <span class="number">0</span>
+                <div class="label">良好创意 (60-79)</div>
+            </div>
+        </div>
+
+        <div class="hotspots">
+            <h2 style="margin-bottom: 30px; color: #667eea;">📊 热点分析结果</h2>
+            
+    <div class="hotspot-card normal" data-score="0" data-rank="1">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #1</span>
+          <h2>上班被公司坑了200万元</h2>
+        </div>
+        <div class="card-score">0分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 1,070,960
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 新
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">未知</div>
+        <div class="timeline-content">分析失败: 401 The `models` permission is required to access this endpoint</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (1个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">分析失败</div>
+          <div class="idea-rating normal">0分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>无法生成</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>未知</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>分析失败</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 0/80 + 有用度 0/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card normal" data-score="0" data-rank="2">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #2</span>
+          <h2>宝可梦踩靖国神社红线不是初犯</h2>
+        </div>
+        <div class="card-score">0分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 781,125
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 沸
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">未知</div>
+        <div class="timeline-content">分析失败: 401 The `models` permission is required to access this endpoint</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (1个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">分析失败</div>
+          <div class="idea-rating normal">0分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>无法生成</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>未知</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>分析失败</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 0/80 + 有用度 0/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card normal" data-score="0" data-rank="3">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #3</span>
+          <h2>中国新能源汽车持续领跑全球</h2>
+        </div>
+        <div class="card-score">0分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 601,408
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 无
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">未知</div>
+        <div class="timeline-content">分析失败: 401 The `models` permission is required to access this endpoint</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (1个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">分析失败</div>
+          <div class="idea-rating normal">0分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>无法生成</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>未知</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>分析失败</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 0/80 + 有用度 0/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card normal" data-score="0" data-rank="4">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #4</span>
+          <h2>乡村爱情18赵四嘎了</h2>
+        </div>
+        <div class="card-score">0分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 594,090
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 新
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">未知</div>
+        <div class="timeline-content">分析失败: 401 The `models` permission is required to access this endpoint</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (1个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">分析失败</div>
+          <div class="idea-rating normal">0分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>无法生成</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>未知</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>分析失败</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 0/80 + 有用度 0/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card normal" data-score="0" data-rank="5">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #5</span>
+          <h2>年轻老板狂扫700万黄金店员报警</h2>
+        </div>
+        <div class="card-score">0分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 575,795
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 无
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">未知</div>
+        <div class="timeline-content">分析失败: 401 The `models` permission is required to access this endpoint</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (1个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">分析失败</div>
+          <div class="idea-rating normal">0分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>无法生成</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>未知</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>分析失败</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 0/80 + 有用度 0/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card normal" data-score="0" data-rank="6">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #6</span>
+          <h2>普通人上镜能有多离谱</h2>
+        </div>
+        <div class="card-score">0分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 528,516
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 新
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">未知</div>
+        <div class="timeline-content">分析失败: 401 The `models` permission is required to access this endpoint</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (1个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">分析失败</div>
+          <div class="idea-rating normal">0分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>无法生成</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>未知</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>分析失败</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 0/80 + 有用度 0/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card normal" data-score="0" data-rank="7">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #7</span>
+          <h2>74岁阿姨10年前10万买408克金条</h2>
+        </div>
+        <div class="card-score">0分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 506,764
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 新
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">未知</div>
+        <div class="timeline-content">分析失败: 401 The `models` permission is required to access this endpoint</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (1个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">分析失败</div>
+          <div class="idea-rating normal">0分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>无法生成</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>未知</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>分析失败</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 0/80 + 有用度 0/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card normal" data-score="0" data-rank="8">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #8</span>
+          <h2>孙俪总台视后</h2>
+        </div>
+        <div class="card-score">0分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 502,241
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 无
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">未知</div>
+        <div class="timeline-content">分析失败: 401 The `models` permission is required to access this endpoint</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (1个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">分析失败</div>
+          <div class="idea-rating normal">0分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>无法生成</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>未知</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>分析失败</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 0/80 + 有用度 0/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card normal" data-score="0" data-rank="9">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #9</span>
+          <h2>微博之夜</h2>
+        </div>
+        <div class="card-score">0分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 463,433
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 沸
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">未知</div>
+        <div class="timeline-content">分析失败: 401 The `models` permission is required to access this endpoint</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (1个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">分析失败</div>
+          <div class="idea-rating normal">0分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>无法生成</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>未知</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>分析失败</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 0/80 + 有用度 0/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card normal" data-score="0" data-rank="10">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #10</span>
+          <h2>银行卡一定要彻底解绑</h2>
+        </div>
+        <div class="card-score">0分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 441,860
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 无
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">未知</div>
+        <div class="timeline-content">分析失败: 401 The `models` permission is required to access this endpoint</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (1个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">分析失败</div>
+          <div class="idea-rating normal">0分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>无法生成</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>未知</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>分析失败</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 0/80 + 有用度 0/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card normal" data-score="0" data-rank="11">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #11</span>
+          <h2>男子喝自制中药中毒身亡</h2>
+        </div>
+        <div class="card-score">0分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 410,477
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 新
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">未知</div>
+        <div class="timeline-content">分析失败: 401 The `models` permission is required to access this endpoint</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (1个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">分析失败</div>
+          <div class="idea-rating normal">0分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>无法生成</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>未知</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>分析失败</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 0/80 + 有用度 0/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card normal" data-score="0" data-rank="12">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #12</span>
+          <h2>白鹿官宣王者荣耀</h2>
+        </div>
+        <div class="card-score">0分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 405,679
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 新
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">未知</div>
+        <div class="timeline-content">分析失败: 401 The `models` permission is required to access this endpoint</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (1个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">分析失败</div>
+          <div class="idea-rating normal">0分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>无法生成</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>未知</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>分析失败</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 0/80 + 有用度 0/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card normal" data-score="0" data-rank="13">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #13</span>
+          <h2>杨幂双料视后了</h2>
+        </div>
+        <div class="card-score">0分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 330,733
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 无
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">未知</div>
+        <div class="timeline-content">分析失败: 401 The `models` permission is required to access this endpoint</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (1个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">分析失败</div>
+          <div class="idea-rating normal">0分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>无法生成</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>未知</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>分析失败</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 0/80 + 有用度 0/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card normal" data-score="0" data-rank="14">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #14</span>
+          <h2>有色金属多股跌停</h2>
+        </div>
+        <div class="card-score">0分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 249,451
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 新
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">未知</div>
+        <div class="timeline-content">分析失败: 401 The `models` permission is required to access this endpoint</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (1个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">分析失败</div>
+          <div class="idea-rating normal">0分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>无法生成</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>未知</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>分析失败</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 0/80 + 有用度 0/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card normal" data-score="0" data-rank="15">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #15</span>
+          <h2>金晨案事发地村民说撞了一堵墙</h2>
+        </div>
+        <div class="card-score">0分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 247,766
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 无
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">未知</div>
+        <div class="timeline-content">分析失败: 401 The `models` permission is required to access this endpoint</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (1个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">分析失败</div>
+          <div class="idea-rating normal">0分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>无法生成</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>未知</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>分析失败</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 0/80 + 有用度 0/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card normal" data-score="0" data-rank="16">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #16</span>
+          <h2>成毅提胯走路太飒了</h2>
+        </div>
+        <div class="card-score">0分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 231,275
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 无
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">未知</div>
+        <div class="timeline-content">分析失败: 401 The `models` permission is required to access this endpoint</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (1个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">分析失败</div>
+          <div class="idea-rating normal">0分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>无法生成</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>未知</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>分析失败</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 0/80 + 有用度 0/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card normal" data-score="0" data-rank="17">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #17</span>
+          <h2>有色</h2>
+        </div>
+        <div class="card-score">0分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 206,027
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 新
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">未知</div>
+        <div class="timeline-content">分析失败: 401 The `models` permission is required to access this endpoint</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (1个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">分析失败</div>
+          <div class="idea-rating normal">0分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>无法生成</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>未知</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>分析失败</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 0/80 + 有用度 0/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card normal" data-score="0" data-rank="18">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #18</span>
+          <h2>杜华希望乐华娱乐不只会造星</h2>
+        </div>
+        <div class="card-score">0分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 205,915
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 新
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">未知</div>
+        <div class="timeline-content">分析失败: 401 The `models` permission is required to access this endpoint</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (1个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">分析失败</div>
+          <div class="idea-rating normal">0分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>无法生成</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>未知</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>分析失败</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 0/80 + 有用度 0/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card normal" data-score="0" data-rank="19">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #19</span>
+          <h2>iQOO15Ultra外观太酷了</h2>
+        </div>
+        <div class="card-score">0分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 200,613
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 新
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">未知</div>
+        <div class="timeline-content">分析失败: 401 The `models` permission is required to access this endpoint</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (1个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">分析失败</div>
+          <div class="idea-rating normal">0分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>无法生成</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>未知</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>分析失败</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 0/80 + 有用度 0/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card normal" data-score="0" data-rank="20">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #20</span>
+          <h2>英国访华团全员用筷子不让上刀叉</h2>
+        </div>
+        <div class="card-score">0分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 194,613
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 新
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">未知</div>
+        <div class="timeline-content">分析失败: 401 The `models` permission is required to access this endpoint</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (1个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">分析失败</div>
+          <div class="idea-rating normal">0分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>无法生成</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>未知</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>分析失败</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 0/80 + 有用度 0/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card normal" data-score="0" data-rank="21">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #21</span>
+          <h2>黄金暴跌</h2>
+        </div>
+        <div class="card-score">0分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 185,313
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 热
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">未知</div>
+        <div class="timeline-content">分析失败: 401 The `models` permission is required to access this endpoint</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (1个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">分析失败</div>
+          <div class="idea-rating normal">0分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>无法生成</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>未知</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>分析失败</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 0/80 + 有用度 0/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card normal" data-score="0" data-rank="22">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #22</span>
+          <h2>今日金价</h2>
+        </div>
+        <div class="card-score">0分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 180,692
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 热
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">未知</div>
+        <div class="timeline-content">分析失败: 401 The `models` permission is required to access this endpoint</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (1个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">分析失败</div>
+          <div class="idea-rating normal">0分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>无法生成</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>未知</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>分析失败</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 0/80 + 有用度 0/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card normal" data-score="0" data-rank="23">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #23</span>
+          <h2>黄金跳水可以上车了吗</h2>
+        </div>
+        <div class="card-score">0分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 174,957
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 无
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">未知</div>
+        <div class="timeline-content">分析失败: 401 The `models` permission is required to access this endpoint</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (1个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">分析失败</div>
+          <div class="idea-rating normal">0分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>无法生成</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>未知</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>分析失败</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 0/80 + 有用度 0/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card normal" data-score="0" data-rank="24">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #24</span>
+          <h2>偶遇王俊凯周杰伦吃火锅</h2>
+        </div>
+        <div class="card-score">0分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 174,835
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 无
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">未知</div>
+        <div class="timeline-content">分析失败: 401 The `models` permission is required to access this endpoint</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (1个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">分析失败</div>
+          <div class="idea-rating normal">0分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>无法生成</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>未知</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>分析失败</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 0/80 + 有用度 0/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card normal" data-score="0" data-rank="25">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #25</span>
+          <h2>孙卓坦言不知父母寻亲的艰辛</h2>
+        </div>
+        <div class="card-score">0分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 168,349
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 无
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">未知</div>
+        <div class="timeline-content">分析失败: 401 The `models` permission is required to access this endpoint</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (1个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">分析失败</div>
+          <div class="idea-rating normal">0分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>无法生成</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>未知</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>分析失败</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 0/80 + 有用度 0/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card normal" data-score="0" data-rank="26">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #26</span>
+          <h2>高铁上女子接电话大哭我妈妈没了</h2>
+        </div>
+        <div class="card-score">0分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 160,120
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 无
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">未知</div>
+        <div class="timeline-content">分析失败: 401 The `models` permission is required to access this endpoint</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (1个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">分析失败</div>
+          <div class="idea-rating normal">0分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>无法生成</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>未知</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>分析失败</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 0/80 + 有用度 0/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card normal" data-score="0" data-rank="27">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #27</span>
+          <h2>王祖贤7秒视频涨粉超90万</h2>
+        </div>
+        <div class="card-score">0分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 147,981
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 无
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">未知</div>
+        <div class="timeline-content">分析失败: 401 The `models` permission is required to access this endpoint</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (1个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">分析失败</div>
+          <div class="idea-rating normal">0分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>无法生成</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>未知</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>分析失败</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 0/80 + 有用度 0/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card normal" data-score="0" data-rank="28">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #28</span>
+          <h2>不要用拍立得拍黑猫</h2>
+        </div>
+        <div class="card-score">0分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 146,398
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 新
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">未知</div>
+        <div class="timeline-content">分析失败: 401 The `models` permission is required to access this endpoint</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (1个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">分析失败</div>
+          <div class="idea-rating normal">0分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>无法生成</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>未知</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>分析失败</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 0/80 + 有用度 0/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card normal" data-score="0" data-rank="29">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #29</span>
+          <h2>金饰克价跌回1662元</h2>
+        </div>
+        <div class="card-score">0分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 139,125
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 无
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">未知</div>
+        <div class="timeline-content">分析失败: 401 The `models` permission is required to access this endpoint</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (1个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">分析失败</div>
+          <div class="idea-rating normal">0分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>无法生成</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>未知</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>分析失败</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 0/80 + 有用度 0/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card normal" data-score="0" data-rank="30">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #30</span>
+          <h2>黄金价格暴跌原因</h2>
+        </div>
+        <div class="card-score">0分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 135,886
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 新
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">未知</div>
+        <div class="timeline-content">分析失败: 401 The `models` permission is required to access this endpoint</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (1个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">分析失败</div>
+          <div class="idea-rating normal">0分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>无法生成</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>未知</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>分析失败</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 0/80 + 有用度 0/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+        </div>
+    </div>
+</body>
+</html>
