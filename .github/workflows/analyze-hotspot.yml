@@ -1,4 +1,4 @@
-name: 微博热搜产品创意分析（GitHub Models 免费版）
+name: 微博热搜产品创意分析（DeepSeek 免费版）
 
 on:
   # 定时执行：每天早上 9:15 (UTC+8 = UTC 01:15) - 避开整点高峰
@@ -11,7 +11,7 @@ on:
       max_hotspots:
         description: '分析热搜数量'
         required: false
-        default: '30'
+        default: '3'  # 默认改为 3 条
       ai_model:
         description: 'AI 模型'
         required: false
@@ -44,13 +44,13 @@ jobs:
       - name: 📦 安装依赖
         run: npm ci
       
-      - name: 🤖 执行分析任务（GitHub Models）
+      - name: 🤖 执行分析任务（DeepSeek API）
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # 自动提供，无需配置
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}  # DeepSeek 免费 API
           WEIBO_API_URL: ${{ secrets.WEIBO_API_URL }}
           WEIBO_API_HEADERS: ${{ secrets.WEIBO_API_HEADERS }}
-          MAX_HOTSPOTS: ${{ github.event.inputs.max_hotspots || '30' }}
+          MAX_HOTSPOTS: ${{ github.event.inputs.max_hotspots || '3' }}  # 默认改为 3
           AI_MODEL: ${{ github.event.inputs.ai_model || 'gpt-4o' }}
         run: npm run analyze
       
