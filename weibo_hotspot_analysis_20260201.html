@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>微博热搜产品创意分析报告</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px;
+            text-align: center;
+            color: white;
+        }
+        .header h1 { font-size: 36px; margin-bottom: 10px; }
+        .header .subtitle { font-size: 18px; opacity: 0.9; }
+        .summary {
+            padding: 30px;
+            background: #f8f9fa;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .summary-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        .summary-card .number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #667eea;
+            display: block;
+        }
+        .summary-card .label { font-size: 14px; color: #666; margin-top: 5px; }
+        .hotspots { padding: 30px; }
+        .hotspot-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+        .hotspot-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        .hotspot-card.excellent {
+            border-color: #4caf50;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+        }
+        .hotspot-card.good {
+            border-color: #2196f3;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        }
+        .hotspot-card.normal {
+            border-color: #9e9e9e;
+            background: #f5f5f5;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .card-header h2 { font-size: 24px; flex: 1; }
+        .card-rank { font-size: 18px; color: #666; margin-right: 20px; }
+        .card-score {
+            font-size: 28px;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 50px;
+            color: white;
+        }
+        .hotspot-card.excellent .card-score { background: #4caf50; }
+        .hotspot-card.good .card-score { background: #2196f3; }
+        .hotspot-card.normal .card-score { background: #9e9e9e; }
+        .hotspot-meta {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #666;
+        }
+        .meta-item .label { font-weight: 500; }
+        .event-timeline {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid #667eea;
+        }
+        .event-timeline h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+        .timeline-item {
+            display: flex;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .timeline-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .timeline-time {
+            font-weight: bold;
+            color: #667eea;
+            min-width: 120px;
+        }
+        .timeline-content { flex: 1; padding-left: 20px; }
+        .product-ideas-section h3 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .product-idea {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border-left: 5px solid #667eea;
+        }
+        .idea-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+        .idea-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        .idea-rating {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+        }
+        .idea-rating.excellent { background: #4caf50; }
+        .idea-rating.good { background: #2196f3; }
+        .idea-rating.normal { background: #9e9e9e; }
+        .idea-section { margin-bottom: 15px; }
+        .idea-section h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        .idea-section p, .idea-section ul {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #444;
+        }
+        .idea-section ul { padding-left: 20px; }
+        .idea-section li { margin-bottom: 5px; }
+        .criteria-breakdown {
+            background: #f5f5f5;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #666;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 微博热搜产品创意分析报告</h1>
+            <p class="subtitle">基于微博实时热搜数据的产品创意挖掘分析（GitHub Models 驱动）</p>
+            <p class="subtitle">生成时间: 2026/02/01 12:05:28</p>
+        </div>
+
+        <div class="summary">
+            <div class="summary-card">
+                <span class="number">3</span>
+                <div class="label">分析热点数</div>
+            </div>
+            <div class="summary-card">
+                <span class="number">5</span>
+                <div class="label">生成创意数</div>
+            </div>
+            <div class="summary-card">
+                <span class="number">2</span>
+                <div class="label">优秀创意 (80+)</div>
+            </div>
+            <div class="summary-card">
+                <span class="number">0</span>
+                <div class="label">良好创意 (60-79)</div>
+            </div>
+        </div>
+
+        <div class="hotspots">
+            <h2 style="margin-bottom: 30px; color: #667eea;">📊 热点分析结果</h2>
+            
+    <div class="hotspot-card excellent" data-score="90" data-rank="1">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #1</span>
+          <h2>元宝红包</h2>
+        </div>
+        <div class="card-score">90分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 1,330,095
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 新
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">2026年1月28日</div>
+        <div class="timeline-content">支付宝宣布在2026年春节活动中推出全新数字红包形式“元宝红包”，用户可领取并赠送具有动态3D效果和音效的数字元宝，内含随机金额或优惠券，引发社交媒体广泛讨论。</div>
+      </div>
+    
+      <div class="timeline-item">
+        <div class="timeline-time">2026年1月30日</div>
+        <div class="timeline-content">微信支付跟进推出“黄金元宝”红包功能，主打可积累、可兑换实体金饰的虚拟黄金元宝概念，与支付宝形成竞争态势，推动“元宝红包”话题热度飙升。</div>
+      </div>
+    
+      <div class="timeline-item">
+        <div class="timeline-time">2026年1月31日</div>
+        <div class="timeline-content">部分银行和电商平台（如京东、拼多多）宣布接入或推出类似元宝红包的春节营销活动，“元宝”成为2026年春节数字红包的核心视觉符号和营销关键词。</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (2个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">元宝宇宙 - 数字收藏与社交红包平台</div>
+          <div class="idea-rating excellent">90分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>可定制化设计的3D动态数字元宝（不同材质、主题、动画）</li><li>元宝红包社交图谱与传递记录可视化</li><li>元宝商城（用收到的元宝积分兑换虚拟物品或实体权益）</li><li>AR元宝寻宝游戏（结合LBS在现实场景放置虚拟元宝）</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>18-35岁的移动互联网重度用户，尤其喜欢社交分享、数字收藏、参与线上活动的年轻群体；以及有春节、庆典、企业福利发放需求的品牌方和企业用户。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>2026年春节红包大战表明，用户对传统红包形式的创新有极高接受度和传播意愿。‘元宝’作为强文化符号，具备衍生为独立数字资产和社交媒介的潜力。市场机会在于将一次性营销活动产品化、平台化，打造一个融合社交、轻收藏、品牌营销的常青平台，而不仅仅是节日限定功能。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 75/80 + 有用度 15/20
+        </div>
+      </div>
+    
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">元宝工坊 - 企业数字礼赠与员工激励SaaS</div>
+          <div class="idea-rating excellent">83分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>为企业提供定制品牌元宝模板库</li><li>集成化的元宝红包发放与预算管理后台</li><li>员工/客户激励活动模板（如签到、任务完成奖励）</li><li>数据看板分析元宝发放效果与员工参与度</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>中小企业HR部门、市场部、行政部门负责人；大型企业的企业文化、员工关系团队；以及有客户维护、会员激励需求的零售、服务业品牌。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>企业端对新颖、低成本、高互动性的员工与客户激励工具存在持续需求。借势“元宝红包”的热度，为企业提供一套易于部署、富有节日和文化气息、且能提升参与感的数字礼赠解决方案。这能将C端热点转化为B端工具，切入企业福利和客户关系管理市场，商业化路径清晰。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 65/80 + 有用度 18/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card excellent" data-score="83" data-rank="3">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #3</span>
+          <h2>已发售春运火车票超5000万张</h2>
+        </div>
+        <div class="card-score">83分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 680,982
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 无
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">2026年1月15日</div>
+        <div class="timeline-content">2026年春运火车票正式开售，官方数据显示开售首日即迎来购票高峰。</div>
+      </div>
+    
+      <div class="timeline-item">
+        <div class="timeline-time">2026年1月20日</div>
+        <div class="timeline-content">多家媒体报道春运火车票发售量已突破3000万张，12306系统访问量激增。</div>
+      </div>
+    
+      <div class="timeline-item">
+        <div class="timeline-time">2026年1月31日</div>
+        <div class="timeline-content">国铁集团发布数据，截至1月31日，已发售2026年春运火车票超5000万张，创同期历史新高。</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (2个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">智行伴侣Pro</div>
+          <div class="idea-rating excellent">83分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>AI智能行程规划与备选方案生成</li><li>多平台（12306、航司、长途客运）票务实时监控与一键抢票</li><li>基于实时交通与天气的行程风险预警与动态调整</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>每年有长途出行需求（尤其是春运、节假日）的务工人员、学生及探亲群体，年龄集中在20-50岁，对出行便利性、确定性和性价比有较高要求。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>2026年春运出行需求持续强劲，票务信息分散、抢票压力大、行程变数多是核心痛点。市场缺乏能整合多交通方式、提供智能弹性规划的一站式解决方案。该产品可切入数亿人次的周期性出行市场，通过增值服务（如优先抢票、保险、行程管理）实现商业化。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 65/80 + 有用度 18/20
+        </div>
+      </div>
+    
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">归途社区-行程拼单与互助平台</div>
+          <div class="idea-rating good">76分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>同路线/同车次用户匹配与社交</li><li>拼车前往火车站/机场、分担费用的发布与对接</li><li>行程互助（如临时照看行李、共享候车信息、结伴出行）</li><li>基于LBS的旅途即时通讯与安全签到</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>独自长途出行、希望降低出行成本或寻求旅途陪伴与互助的年轻用户（如大学生、年轻务工者），以及需要临时协助的带小孩或老人出行的家庭旅客。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>春运场景下存在大量同向出行需求，但缺乏安全、便捷的组织方式。该平台利用规模效应，解决“最后一公里”接驳、旅途孤独及小额成本分摊问题，构建基于出行场景的垂直社交与互助生态，可通过信息撮合服务费、广告及与出行服务商合作盈利。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 60/80 + 有用度 16/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card normal" data-score="0" data-rank="2">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #2</span>
+          <h2>93年男员工为了生孩子辞职</h2>
+        </div>
+        <div class="card-score">0分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 882,944
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 新
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">未知</div>
+        <div class="timeline-content">分析失败: Unexpected token &#039;“&#039;, ...&quot;机会’AI评估&quot;, “模拟不同选择（如辞&quot;... is not valid JSON</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (1个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">分析失败</div>
+          <div class="idea-rating normal">0分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>无法生成</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>未知</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>分析失败</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 0/80 + 有用度 0/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+        </div>
+    </div>
+</body>
+</html>
