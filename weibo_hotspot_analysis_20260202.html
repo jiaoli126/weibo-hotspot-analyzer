@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>微博热搜产品创意分析报告</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px;
+            text-align: center;
+            color: white;
+        }
+        .header h1 { font-size: 36px; margin-bottom: 10px; }
+        .header .subtitle { font-size: 18px; opacity: 0.9; }
+        .summary {
+            padding: 30px;
+            background: #f8f9fa;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .summary-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        .summary-card .number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #667eea;
+            display: block;
+        }
+        .summary-card .label { font-size: 14px; color: #666; margin-top: 5px; }
+        .hotspots { padding: 30px; }
+        .hotspot-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+        .hotspot-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        .hotspot-card.excellent {
+            border-color: #4caf50;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+        }
+        .hotspot-card.good {
+            border-color: #2196f3;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        }
+        .hotspot-card.normal {
+            border-color: #9e9e9e;
+            background: #f5f5f5;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .card-header h2 { font-size: 24px; flex: 1; }
+        .card-rank { font-size: 18px; color: #666; margin-right: 20px; }
+        .card-score {
+            font-size: 28px;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 50px;
+            color: white;
+        }
+        .hotspot-card.excellent .card-score { background: #4caf50; }
+        .hotspot-card.good .card-score { background: #2196f3; }
+        .hotspot-card.normal .card-score { background: #9e9e9e; }
+        .hotspot-meta {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #666;
+        }
+        .meta-item .label { font-weight: 500; }
+        .event-timeline {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid #667eea;
+        }
+        .event-timeline h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+        .timeline-item {
+            display: flex;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .timeline-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .timeline-time {
+            font-weight: bold;
+            color: #667eea;
+            min-width: 120px;
+        }
+        .timeline-content { flex: 1; padding-left: 20px; }
+        .product-ideas-section h3 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .product-idea {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border-left: 5px solid #667eea;
+        }
+        .idea-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+        .idea-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        .idea-rating {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+        }
+        .idea-rating.excellent { background: #4caf50; }
+        .idea-rating.good { background: #2196f3; }
+        .idea-rating.normal { background: #9e9e9e; }
+        .idea-section { margin-bottom: 15px; }
+        .idea-section h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        .idea-section p, .idea-section ul {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #444;
+        }
+        .idea-section ul { padding-left: 20px; }
+        .idea-section li { margin-bottom: 5px; }
+        .criteria-breakdown {
+            background: #f5f5f5;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #666;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 微博热搜产品创意分析报告</h1>
+            <p class="subtitle">基于微博实时热搜数据的产品创意挖掘分析（GitHub Models 驱动）</p>
+            <p class="subtitle">生成时间: 2026/02/02 11:48:56</p>
+        </div>
+
+        <div class="summary">
+            <div class="summary-card">
+                <span class="number">3</span>
+                <div class="label">分析热点数</div>
+            </div>
+            <div class="summary-card">
+                <span class="number">5</span>
+                <div class="label">生成创意数</div>
+            </div>
+            <div class="summary-card">
+                <span class="number">2</span>
+                <div class="label">优秀创意 (80+)</div>
+            </div>
+            <div class="summary-card">
+                <span class="number">0</span>
+                <div class="label">良好创意 (60-79)</div>
+            </div>
+        </div>
+
+        <div class="hotspots">
+            <h2 style="margin-bottom: 30px; color: #667eea;">📊 热点分析结果</h2>
+            
+    <div class="hotspot-card excellent" data-score="91" data-rank="2">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #2</span>
+          <h2>格莱美直播</h2>
+        </div>
+        <div class="card-score">91分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 785,776
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 无
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">2026年2月2日</div>
+        <div class="timeline-content">第68届格莱美奖颁奖典礼在美国洛杉矶举行，并通过全球多家流媒体平台进行直播。</div>
+      </div>
+    
+      <div class="timeline-item">
+        <div class="timeline-time">2026年1月15日</div>
+        <div class="timeline-content">格莱美奖提名名单公布，引发全球乐迷热议，相关话题在社交媒体上持续发酵。</div>
+      </div>
+    
+      <div class="timeline-item">
+        <div class="timeline-time">2026年1月回顾2025年事件</div>
+        <div class="timeline-content">回顾2025年格莱美直播，数据显示互动式直播功能（如实时投票、AR特效）显著提升了用户参与度和观看时长。</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (2个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">GrammyLive Hub</div>
+          <div class="idea-rating excellent">91分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>多视角沉浸式直播（可选择艺人、红毯、后台等专属视角）</li><li>实时AI字幕与多语言同传</li><li>虚拟社交观演厅（可与好友或同好粉丝在虚拟空间中共同观看、聊天、互动）</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>全球音乐爱好者、粉丝社群、对颁奖典礼及流行文化感兴趣的青年及中年群体，尤其注重社交体验和深度参与感的用户。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>大型颁奖典礼直播市场趋于同质化，用户已不满足于被动观看。结合VR/AR、实时社交和个性化体验的技术已成熟，市场存在对高互动性、强沉浸感直播平台的需求缺口。可围绕此类顶级IP打造标杆体验，再复制到其他娱乐、体育直播场景。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 75/80 + 有用度 16/20
+        </div>
+      </div>
+    
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">AuraBeat 音乐盛典AI剪辑师</div>
+          <div class="idea-rating excellent">83分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>基于用户音乐偏好与观看行为的AI实时精彩片段生成</li><li>一键生成个性化颁奖典礼Highlight Reel并分享至社交平台</li><li>深度内容分析（如获奖作品音乐风格解析、艺人着装趋势报告）</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>时间有限但希望快速获取核心内容的上班族、内容创作者、社交媒体重度用户、乐评人及行业观察者。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>在信息过载时代，用户需要高效获取高质量、个性化的内容摘要。AI视频剪辑与内容分析技术可应用于各类长视频直播场景（如颁奖礼、演唱会、体育赛事），帮助用户节省时间并创造社交谈资，具备工具和内容平台的双重潜力。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 68/80 + 有用度 15/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card excellent" data-score="81" data-rank="1">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #1</span>
+          <h2>白家犯罪集团4人被执行死刑</h2>
+        </div>
+        <div class="card-score">81分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 1,072,869
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 新
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">2026年1月30日</div>
+        <div class="timeline-content">白家犯罪集团4名主要成员经最高人民法院核准，被执行死刑。该集团长期从事有组织犯罪活动，案件审理历时多年，最终判决在2026年初执行，引发社会广泛关注。</div>
+      </div>
+    
+      <div class="timeline-item">
+        <div class="timeline-time">2026年2月1日</div>
+        <div class="timeline-content">‘白家犯罪集团4人被执行死刑’话题登上微博热搜，阅读量迅速突破千万，网民热议法治进程与社会治安。</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (2个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">法鉴通 - 全民法治教育互动平台</div>
+          <div class="idea-rating excellent">81分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>重大法治案件3D时间线互动回溯</li><li>基于AI的普法知识问答与情景模拟</li><li>匿名社会安全感与法治信心指数调研与可视化</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>关注社会新闻与法治进程的普通网民（18-50岁）、社区工作者、中小学及高校思政/法治教育工作者、对提升法律意识有需求的企业员工。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>热点事件凸显公众对重大案件细节、法律程序及社会影响的求知欲。现有新闻APP报道形式单一，缺乏深度互动与系统化普法。可结合VR/AR、AI问答技术，将严肃法治内容转化为可互动、可体验的产品，满足公众知情权与学习需求，同时为政府、学校、企业提供定制化普法解决方案。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 65/80 + 有用度 16/20
+        </div>
+      </div>
+    
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">清源 - 企业及组织合规风险AI筛查与预警系统</div>
+          <div class="idea-rating good">76分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>关联方与背景深度智能调查</li><li>基于公开司法、行政数据的合规风险动态建模与预警</li><li>员工及合作伙伴行为守则数字化管理与培训跟踪</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>中大型企业（尤其是金融、地产、供应链等高风险行业）的合规、风控、审计部门；创业公司创始人；需要加强内部监管的政府机构及事业单位。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>白家案件等涉黑涉恶经济犯罪警示企业合规的重要性。市场现有风控工具多聚焦金融信用，缺乏针对组织内部及商业伙伴涉法、涉罪风险的深度筛查与预警。利用NLP和大数据分析公开裁判文书、行政处罚、舆情等信息，为企业提供前置性风险防控工具，符合强监管趋势下的企业刚性需求。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 58/80 + 有用度 18/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card normal" data-score="0" data-rank="3">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #3</span>
+          <h2>2026新春走基层主题曲MV</h2>
+        </div>
+        <div class="card-score">0分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 622,344
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 新
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">未知</div>
+        <div class="timeline-content">分析失败: Unexpected token &#039;“&#039;, ...&quot;  &quot;name&quot;: “脉动中国”沉浸式基&quot;... is not valid JSON</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (1个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">分析失败</div>
+          <div class="idea-rating normal">0分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>无法生成</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>未知</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>分析失败</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 0/80 + 有用度 0/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+        </div>
+    </div>
+</body>
+</html>
