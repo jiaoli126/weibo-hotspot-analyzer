@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>微博热搜产品创意分析报告</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px;
+            text-align: center;
+            color: white;
+        }
+        .header h1 { font-size: 36px; margin-bottom: 10px; }
+        .header .subtitle { font-size: 18px; opacity: 0.9; }
+        .summary {
+            padding: 30px;
+            background: #f8f9fa;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .summary-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        .summary-card .number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #667eea;
+            display: block;
+        }
+        .summary-card .label { font-size: 14px; color: #666; margin-top: 5px; }
+        .hotspots { padding: 30px; }
+        .hotspot-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+        .hotspot-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        .hotspot-card.excellent {
+            border-color: #4caf50;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+        }
+        .hotspot-card.good {
+            border-color: #2196f3;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        }
+        .hotspot-card.normal {
+            border-color: #9e9e9e;
+            background: #f5f5f5;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .card-header h2 { font-size: 24px; flex: 1; }
+        .card-rank { font-size: 18px; color: #666; margin-right: 20px; }
+        .card-score {
+            font-size: 28px;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 50px;
+            color: white;
+        }
+        .hotspot-card.excellent .card-score { background: #4caf50; }
+        .hotspot-card.good .card-score { background: #2196f3; }
+        .hotspot-card.normal .card-score { background: #9e9e9e; }
+        .hotspot-meta {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #666;
+        }
+        .meta-item .label { font-weight: 500; }
+        .event-timeline {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid #667eea;
+        }
+        .event-timeline h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+        .timeline-item {
+            display: flex;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .timeline-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .timeline-time {
+            font-weight: bold;
+            color: #667eea;
+            min-width: 120px;
+        }
+        .timeline-content { flex: 1; padding-left: 20px; }
+        .product-ideas-section h3 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .product-idea {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border-left: 5px solid #667eea;
+        }
+        .idea-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+        .idea-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        .idea-rating {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+        }
+        .idea-rating.excellent { background: #4caf50; }
+        .idea-rating.good { background: #2196f3; }
+        .idea-rating.normal { background: #9e9e9e; }
+        .idea-section { margin-bottom: 15px; }
+        .idea-section h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        .idea-section p, .idea-section ul {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #444;
+        }
+        .idea-section ul { padding-left: 20px; }
+        .idea-section li { margin-bottom: 5px; }
+        .criteria-breakdown {
+            background: #f5f5f5;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #666;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 微博热搜产品创意分析报告</h1>
+            <p class="subtitle">基于微博实时热搜数据的产品创意挖掘分析（GitHub Models 驱动）</p>
+            <p class="subtitle">生成时间: 2026/02/11 12:04:18</p>
+        </div>
+
+        <div class="summary">
+            <div class="summary-card">
+                <span class="number">3</span>
+                <div class="label">分析热点数</div>
+            </div>
+            <div class="summary-card">
+                <span class="number">6</span>
+                <div class="label">生成创意数</div>
+            </div>
+            <div class="summary-card">
+                <span class="number">3</span>
+                <div class="label">优秀创意 (80+)</div>
+            </div>
+            <div class="summary-card">
+                <span class="number">0</span>
+                <div class="label">良好创意 (60-79)</div>
+            </div>
+        </div>
+
+        <div class="hotspots">
+            <h2 style="margin-bottom: 30px; color: #667eea;">📊 热点分析结果</h2>
+            
+    <div class="hotspot-card excellent" data-score="93" data-rank="3">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #3</span>
+          <h2>到中国过年成为热潮</h2>
+        </div>
+        <div class="card-score">93分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 659,987
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 新
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">2026年1月15日</div>
+        <div class="timeline-content">联合国教科文组织将‘中国春节’正式列入人类非物质文化遗产代表作名录，全球关注度飙升。</div>
+      </div>
+    
+      <div class="timeline-item">
+        <div class="timeline-time">2026年1月28日</div>
+        <div class="timeline-content">中国文旅部宣布推出‘新春友好年’计划，简化多国游客签证流程并推出系列文化体验活动。</div>
+      </div>
+    
+      <div class="timeline-item">
+        <div class="timeline-time">2026年2月1日</div>
+        <div class="timeline-content">国际旅游平台数据显示，2026年春节期间预订赴华旅游的外国游客数量同比2025年增长300%，‘到中国过年’成为全球社交媒体热议话题。</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (2个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">年味通 - 沉浸式春节文化体验平台</div>
+          <div class="idea-rating excellent">93分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>AI春节习俗个性化路线规划（如北方饺子宴、南方逛花市）</li><li>AR实时翻译与春节文化符号解说（如对联、灯笼含义）</li><li>本地‘春节大使’（Host）在线匹配与线下活动组织</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>计划或正在中国过年的外国游客、海外华人家庭、对中国传统文化有浓厚兴趣的国际学生与年轻群体。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>借势‘中国春节’申遗成功及签证便利化政策带来的入境游爆发式增长。市场缺乏整合深度文化体验、实时语言支持与本地社交连接的一站式服务平台。可对接文旅部‘新春友好年’项目，获取官方资源与推广渠道。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 75/80 + 有用度 18/20
+        </div>
+      </div>
+    
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">团圆匣 - 跨国春节远程共庆社交硬件套组</div>
+          <div class="idea-rating excellent">86分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>智能互联节日装饰（如可同步点亮、显示远程家人留言的电子灯笼）</li><li>沉浸式双向VR年夜饭共享空间</li><li>一键生成年度家庭数字记忆册并实体邮寄服务</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>因工作、学习等原因无法回国团聚的海外华人家庭、有中国家人或伴侣的国际家庭、喜欢体验科技感节日氛围的全球极客与年轻家庭。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>‘到中国过年’热潮也反向激发了海外华人与国际家庭的思乡与共庆需求。传统视频通话无法满足仪式感与沉浸感。该产品将硬件（装饰品）、软件（VR空间）与服务（记忆册）结合，创造情感消费新场景，契合后疫情时代对‘数字团圆’的持续需求。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 70/80 + 有用度 16/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card excellent" data-score="88" data-rank="1">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #1</span>
+          <h2>微信9大更新</h2>
+        </div>
+        <div class="card-score">88分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 1,145,726
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 新
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">2026年2月10日</div>
+        <div class="timeline-content">微信官方公众号发布预告，宣布将于次日公布包含9项重大更新的新版本，引发全网猜测与讨论。</div>
+      </div>
+    
+      <div class="timeline-item">
+        <div class="timeline-time">2026年2月11日</div>
+        <div class="timeline-content">微信正式发布9.0版本，详细介绍了9大核心更新功能，包括深度AI集成、全场景支付、沉浸式社交空间等，相关话题迅速登上微博热搜榜首。</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (2个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">微联AI助手</div>
+          <div class="idea-rating excellent">88分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>跨应用智能工作流编排</li><li>基于微信生态数据的个性化建议生成</li><li>隐私优先的本地化AI模型协同</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>重度依赖微信进行工作沟通、生活服务与信息获取的中青年专业人士及小微企业主，他们需要更高效地整合微信内外的信息与服务，但受限于现有工具的割裂性。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>微信的更新强化了其作为‘数字生活中心’的地位，但其AI能力仍主要服务于内部场景。存在一个市场缺口，即需要一个安全、可信的第三方AI工具，能够合法、合规地连接微信生态数据与用户的其他数字工具（如办公软件、日历、电商平台），提供跨平台的自动化与智能决策支持，解决信息过载与操作碎片化问题。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 72/80 + 有用度 16/20
+        </div>
+      </div>
+    
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">瞬影阅后即焚协作板</div>
+          <div class="idea-rating excellent">80分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>基于临时群聊的加密白板协作</li><li>支持多媒体内容的定时销毁</li><li>协作痕迹的区块链存证与验证</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>有高强度临时协作需求的团队，如线上脑暴会议参与者、短期项目组、律师与客户间的敏感文件讨论、媒体内容预览反馈等场景的用户，他们对通信的时效性、安全性与专注度有极高要求。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>微信更新可能增强了群功能，但‘永久保存’和‘信息过载’仍是痛点。市场需要一款极致聚焦于‘临时、安全、专注’的协作产品。它并非取代微信，而是在特定高频、高价值场景下提供更优解决方案。随着远程办公与零工经济深化，对轻量、安全、无遗留负担的协作工具需求持续增长。该产品可作为微信生态的补充插件存在，降低用户使用门槛。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 65/80 + 有用度 15/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card excellent" data-score="86" data-rank="2">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #2</span>
+          <h2>火箭回收</h2>
+        </div>
+        <div class="card-score">86分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 851,975
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 新
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">2026年2月10日</div>
+        <div class="timeline-content">国内商业航天公司‘星河探索’成功完成其‘朱雀三号’运载火箭的首次一子级陆上定点回收，标志着中国在可重复使用火箭技术领域取得重大突破，引发公众对航天技术民用化的广泛讨论。</div>
+      </div>
+    
+      <div class="timeline-item">
+        <div class="timeline-time">2026年1月15日</div>
+        <div class="timeline-content">美国SpaceX公司宣布其‘星舰’系统完成第N次全箭回收测试，并首次实现48小时内重复发射，将‘火箭快速复用’概念推向新高度，全球航天产业竞争加剧。</div>
+      </div>
+    
+      <div class="timeline-item">
+        <div class="timeline-time">2026年1月5日</div>
+        <div class="timeline-content">2026年1月回顾2025年事件：2025年末，欧洲航天局（ESA）与空客联合研制的‘忒弥斯’可重复使用演示器完成首次亚轨道飞行与回收，全球可回收火箭技术呈现多极化发展态势。</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (2个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">星迹回收模拟器（家用版）</div>
+          <div class="idea-rating excellent">86分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>基于真实物理引擎的火箭发射与回收VR/AR模拟体验</li><li>连接主流航模遥控器，提供高拟真度的第一人称操控手感</li><li>内置全球主要商业火箭（如朱雀三号、猎鹰9号）模型与任务关卡</li><li>‘我的任务’模式：用户可自定义载荷、轨道并挑战最优回收方案</li><li>社区功能：分享回收录像、参数设置，参与线上精准着陆挑战赛</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>对航天科技有浓厚兴趣的青少年、大学生及年轻科技爱好者；航模玩家寻求更高阶、更真实的操控体验；科普教育机构用于互动教学；部分硬核游戏玩家。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>随着2026年火箭回收新闻频上热搜，公众（尤其是Z世代）对航天技术的认知和兴趣达到新高，但参与门槛极高。该产品将高冷的航天工程转化为可触达的家庭娱乐与教育产品，填补了高端科技模拟体验的市场空白。可结合硬件（专用控制器/VR设备）销售、软件订阅（新火箭模型、任务包）以及赛事运营实现盈利。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 72/80 + 有用度 14/20
+        </div>
+      </div>
+    
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">“归航”航天物流追踪与数据分析平台</div>
+          <div class="idea-rating good">76分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>实时可视化追踪全球商业火箭发射、在轨运行及回收过程</li><li>提供火箭复用次数、健康状况、每次任务成本等深度数据分析</li><li>面向企业的API接口：为卫星运营商、保险公司、投资机构提供发射风险评估与供应链数据支持</li><li>面向公众的科普模块：用通俗图表解读每次回收任务的技术难点与经济价值</li><li>预警与通知系统：对关注的火箭发射、回收关键节点推送提醒</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>商业卫星公司、航天产业链上下游企业、金融与保险机构的分析师；科技媒体与财经记者；资深航天爱好者与数据极客。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>2026年，可重复使用火箭进入高密度运营阶段，其复用数据成为衡量航天公司竞争力、评估发射成本与风险的核心。目前缺乏整合、可视化且易于分析的专业数据平台。该产品瞄准B端专业需求，通过数据订阅服务和API调用收费，同时以免费公众版获取流量，建立行业数据标准，商业价值明确。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 58/80 + 有用度 18/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+        </div>
+    </div>
+</body>
+</html>
