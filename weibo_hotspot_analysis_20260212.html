@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>微博热搜产品创意分析报告</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px;
+            text-align: center;
+            color: white;
+        }
+        .header h1 { font-size: 36px; margin-bottom: 10px; }
+        .header .subtitle { font-size: 18px; opacity: 0.9; }
+        .summary {
+            padding: 30px;
+            background: #f8f9fa;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .summary-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        .summary-card .number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #667eea;
+            display: block;
+        }
+        .summary-card .label { font-size: 14px; color: #666; margin-top: 5px; }
+        .hotspots { padding: 30px; }
+        .hotspot-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+        .hotspot-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        .hotspot-card.excellent {
+            border-color: #4caf50;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+        }
+        .hotspot-card.good {
+            border-color: #2196f3;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        }
+        .hotspot-card.normal {
+            border-color: #9e9e9e;
+            background: #f5f5f5;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .card-header h2 { font-size: 24px; flex: 1; }
+        .card-rank { font-size: 18px; color: #666; margin-right: 20px; }
+        .card-score {
+            font-size: 28px;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 50px;
+            color: white;
+        }
+        .hotspot-card.excellent .card-score { background: #4caf50; }
+        .hotspot-card.good .card-score { background: #2196f3; }
+        .hotspot-card.normal .card-score { background: #9e9e9e; }
+        .hotspot-meta {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #666;
+        }
+        .meta-item .label { font-weight: 500; }
+        .event-timeline {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid #667eea;
+        }
+        .event-timeline h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+        .timeline-item {
+            display: flex;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .timeline-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .timeline-time {
+            font-weight: bold;
+            color: #667eea;
+            min-width: 120px;
+        }
+        .timeline-content { flex: 1; padding-left: 20px; }
+        .product-ideas-section h3 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .product-idea {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border-left: 5px solid #667eea;
+        }
+        .idea-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+        .idea-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        .idea-rating {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+        }
+        .idea-rating.excellent { background: #4caf50; }
+        .idea-rating.good { background: #2196f3; }
+        .idea-rating.normal { background: #9e9e9e; }
+        .idea-section { margin-bottom: 15px; }
+        .idea-section h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        .idea-section p, .idea-section ul {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #444;
+        }
+        .idea-section ul { padding-left: 20px; }
+        .idea-section li { margin-bottom: 5px; }
+        .criteria-breakdown {
+            background: #f5f5f5;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #666;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 微博热搜产品创意分析报告</h1>
+            <p class="subtitle">基于微博实时热搜数据的产品创意挖掘分析（GitHub Models 驱动）</p>
+            <p class="subtitle">生成时间: 2026/02/12 11:51:55</p>
+        </div>
+
+        <div class="summary">
+            <div class="summary-card">
+                <span class="number">3</span>
+                <div class="label">分析热点数</div>
+            </div>
+            <div class="summary-card">
+                <span class="number">6</span>
+                <div class="label">生成创意数</div>
+            </div>
+            <div class="summary-card">
+                <span class="number">3</span>
+                <div class="label">优秀创意 (80+)</div>
+            </div>
+            <div class="summary-card">
+                <span class="number">0</span>
+                <div class="label">良好创意 (60-79)</div>
+            </div>
+        </div>
+
+        <div class="hotspots">
+            <h2 style="margin-bottom: 30px; color: #667eea;">📊 热点分析结果</h2>
+            
+    <div class="hotspot-card excellent" data-score="87" data-rank="1">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #1</span>
+          <h2>玫瑰丛生定档</h2>
+        </div>
+        <div class="card-score">87分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 1,095,827
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 新
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">2026年2月12日</div>
+        <div class="timeline-content">影视剧《玫瑰丛生》官方宣布定档，相关话题迅速登上微博热搜，引发观众和粉丝的广泛讨论与期待。</div>
+      </div>
+    
+      <div class="timeline-item">
+        <div class="timeline-time">2026年1月回顾2025年事件</div>
+        <div class="timeline-content">2025年末，影视剧《玫瑰丛生》发布首支预告片，凭借其独特的题材和强大的演员阵容，在社交媒体上积累了初步的关注度和话题度。</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (2个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">丛生追剧日历</div>
+          <div class="idea-rating excellent">87分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>与剧集播出日程深度绑定的个性化日历应用</li><li>提供角色关系图、剧情时间线梳理等辅助理解功能</li><li>集成粉丝社区，支持剧情讨论、同人创作分享</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>《玫瑰丛生》的剧迷、主演的粉丝群体，以及热衷于追剧、参与剧情讨论和社区互动的年轻观众（年龄主要在18-35岁）。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>利用剧集定档带来的集中关注热度，将用户的追剧需求从被动观看转化为主动参与和社交互动。当前市场缺乏与特定热门剧集深度绑定的、集日程管理、内容解读和社区互动于一体的垂直工具。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 72/80 + 有用度 15/20
+        </div>
+      </div>
+    
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">玫瑰美学AR滤镜包</div>
+          <div class="idea-rating excellent">82分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>基于《玫瑰丛生》视觉风格（如服化道、场景色调）设计的系列AR滤镜</li><li>支持用户生成带有剧集元素的创意短视频或照片</li><li>提供“角色仿妆”、“经典场景复刻”等主题模板</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>喜欢在社交媒体（如抖音、微博、小红书）上分享创意内容、追逐影视剧同款潮流、进行角色扮演或仿妆的年轻用户，尤其是女性用户。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>剧集热播期间，观众有强烈的代入感和表达欲。AR滤镜作为低门槛的UGC创作工具，能有效承接这种情绪，促进剧集相关内容的病毒式传播，同时为社交平台和剧方提供营销和变现的新途径。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 68/80 + 有用度 14/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card excellent" data-score="87" data-rank="3">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #3</span>
+          <h2>春运路上藏着这些马年彩蛋</h2>
+        </div>
+        <div class="card-score">87分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 625,808
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 无
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">2026年1月28日</div>
+        <div class="timeline-content">2026年春运正式启动，各大交通枢纽迎来客流高峰</div>
+      </div>
+    
+      <div class="timeline-item">
+        <div class="timeline-time">2026年2月1日</div>
+        <div class="timeline-content">社交媒体上开始出现‘寻找春运路上的马年彩蛋’话题讨论</div>
+      </div>
+    
+      <div class="timeline-item">
+        <div class="timeline-time">2026年2月5日</div>
+        <div class="timeline-content">铁路、航空、公路运输部门联合推出马年主题装饰和互动活动</div>
+      </div>
+    
+      <div class="timeline-item">
+        <div class="timeline-time">2026年2月10日</div>
+        <div class="timeline-content">‘春运路上藏着这些马年彩蛋’话题登上微博热搜，用户分享各地发现的彩蛋</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (2个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">旅途彩蛋猎人AR应用</div>
+          <div class="idea-rating excellent">87分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>AR扫描识别春运场景中的隐藏彩蛋</li><li>彩蛋收集成就系统与排行榜</li><li>基于位置的彩蛋线索推送与社交分享功能</li><li>与交通部门合作的官方彩蛋验证系统</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>18-35岁的春运旅客，特别是喜欢社交分享、追求新奇体验的年轻人群，以及亲子家庭旅客</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>春运期间数亿人次流动创造了巨大的线下互动场景。传统旅途枯燥，用户渴望趣味性互动。AR技术成熟，结合节日营销和位置服务，能有效提升旅途体验，同时为交通部门、品牌商提供创新的营销和用户互动渠道。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 72/80 + 有用度 15/20
+        </div>
+      </div>
+    
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">节气旅程故事地图</div>
+          <div class="idea-rating excellent">81分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>自动生成用户的春运旅程可视化地图</li><li>沿途标记用户发现的‘彩蛋’及拍摄瞬间</li><li>嵌入马年文化、春运历史等轻知识内容</li><li>一键生成带有旅程故事和彩蛋集锦的纪念长图或短视频</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>所有春运旅客，尤其是对记录旅程、分享见闻有需求的用户，以及关注传统文化的人群。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>春运是中国人年度情感和物理迁徙的集中体现，用户有强烈的记录和分享需求。将个人旅程数据与文化彩蛋、年度主题结合，创造出独特的数字纪念品，满足情感价值和社交展示需求。可集成于出行APP或作为独立工具，具有清晰的用户价值。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 65/80 + 有用度 16/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card excellent" data-score="83" data-rank="2">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #2</span>
+          <h2>两名小孩扔爆竹致1200年古树起火</h2>
+        </div>
+        <div class="card-score">83分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 777,186
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 无
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">2026年2月12日</div>
+        <div class="timeline-content">两名小孩在春节期间燃放爆竹，不慎将爆竹扔入一棵树龄约1200年的古树树洞中，引发火灾。火势迅速蔓延，古树主干部分被严重烧毁，引发社会广泛关注与讨论。</div>
+      </div>
+    
+      <div class="timeline-item">
+        <div class="timeline-time">2026年2月13日</div>
+        <div class="timeline-content">当地文物保护部门、消防部门及林业专家赶赴现场评估损失，初步认定古树存活希望渺茫。事件在社交媒体上持续发酵，关于儿童安全教育、烟花爆竹管理及古树名木保护的讨论成为热点。</div>
+      </div>
+    
+      <div class="timeline-item">
+        <div class="timeline-time">2026年2月14日</div>
+        <div class="timeline-content">回顾2023年类似事件：某地也曾发生因燃放烟花爆竹引发的古建筑火险。舆论呼吁利用科技手段加强对重点文保单位及古树名木的实时监测与风险预警。</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (2个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">古树名木智能守护系统</div>
+          <div class="idea-rating excellent">83分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>基于物联网的温湿度、烟雾、震动多传感器实时监测</li><li>AI视频分析识别异常行为（如攀爬、明火靠近）并自动语音警示</li><li>风险预警自动推送至属地管理人员APP及监管平台</li><li>结合AR技术提供古树历史文化信息科普互动</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>各级文物保护单位、城市园林绿化管理部门、森林公园及自然保护区管理机构、拥有古树名木的景区和社区物业。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>随着社会对文化遗产和生态环境保护的意识增强，政府对文物和古树名木的数字化、智能化管护投入持续增加。此事件凸显了传统人工巡查的局限性，为集监测、预警、科普于一体的智能解决方案创造了明确的市场需求。可结合智慧城市、智慧文旅项目进行推广。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 65/80 + 有用度 18/20
+        </div>
+      </div>
+    
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">儿童安全教育AR互动游戏包（春节安全特辑）</div>
+          <div class="idea-rating excellent">86分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>通过手机/AR眼镜进行场景化互动，模拟燃放烟花爆竹、家用电器使用等常见风险场景</li><li>游戏化任务引导孩子识别危险行为并学习正确操作与应急措施</li><li>内置家长端报告，展示孩子学习进度与风险认知盲区</li><li>内容模块可更新，适配不同节日（如清明防火、暑期防溺水）</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>主要针对5-12岁儿童的家长及家庭用户；次要用户为幼儿园、小学等教育机构，用于辅助安全教育课程。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>此次事件反映了低龄儿童风险认知与行为控制的不足。传统的说教式安全教育效果有限。利用AR技术提供沉浸式、趣味性的互动学习体验，符合家庭教育消费升级趋势。可采取APP订阅制或与教育机构、智能硬件（如学习平板、AR眼镜）厂商合作预装。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 70/80 + 有用度 16/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+        </div>
+    </div>
+</body>
+</html>
