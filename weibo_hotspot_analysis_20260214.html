@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>微博热搜产品创意分析报告</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px;
+            text-align: center;
+            color: white;
+        }
+        .header h1 { font-size: 36px; margin-bottom: 10px; }
+        .header .subtitle { font-size: 18px; opacity: 0.9; }
+        .summary {
+            padding: 30px;
+            background: #f8f9fa;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .summary-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        .summary-card .number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #667eea;
+            display: block;
+        }
+        .summary-card .label { font-size: 14px; color: #666; margin-top: 5px; }
+        .hotspots { padding: 30px; }
+        .hotspot-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+        .hotspot-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        .hotspot-card.excellent {
+            border-color: #4caf50;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+        }
+        .hotspot-card.good {
+            border-color: #2196f3;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        }
+        .hotspot-card.normal {
+            border-color: #9e9e9e;
+            background: #f5f5f5;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .card-header h2 { font-size: 24px; flex: 1; }
+        .card-rank { font-size: 18px; color: #666; margin-right: 20px; }
+        .card-score {
+            font-size: 28px;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 50px;
+            color: white;
+        }
+        .hotspot-card.excellent .card-score { background: #4caf50; }
+        .hotspot-card.good .card-score { background: #2196f3; }
+        .hotspot-card.normal .card-score { background: #9e9e9e; }
+        .hotspot-meta {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #666;
+        }
+        .meta-item .label { font-weight: 500; }
+        .event-timeline {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid #667eea;
+        }
+        .event-timeline h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+        .timeline-item {
+            display: flex;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .timeline-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .timeline-time {
+            font-weight: bold;
+            color: #667eea;
+            min-width: 120px;
+        }
+        .timeline-content { flex: 1; padding-left: 20px; }
+        .product-ideas-section h3 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .product-idea {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border-left: 5px solid #667eea;
+        }
+        .idea-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+        .idea-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        .idea-rating {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+        }
+        .idea-rating.excellent { background: #4caf50; }
+        .idea-rating.good { background: #2196f3; }
+        .idea-rating.normal { background: #9e9e9e; }
+        .idea-section { margin-bottom: 15px; }
+        .idea-section h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        .idea-section p, .idea-section ul {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #444;
+        }
+        .idea-section ul { padding-left: 20px; }
+        .idea-section li { margin-bottom: 5px; }
+        .criteria-breakdown {
+            background: #f5f5f5;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #666;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 微博热搜产品创意分析报告</h1>
+            <p class="subtitle">基于微博实时热搜数据的产品创意挖掘分析（GitHub Models 驱动）</p>
+            <p class="subtitle">生成时间: 2026/02/14 11:38:09</p>
+        </div>
+
+        <div class="summary">
+            <div class="summary-card">
+                <span class="number">3</span>
+                <div class="label">分析热点数</div>
+            </div>
+            <div class="summary-card">
+                <span class="number">5</span>
+                <div class="label">生成创意数</div>
+            </div>
+            <div class="summary-card">
+                <span class="number">2</span>
+                <div class="label">优秀创意 (80+)</div>
+            </div>
+            <div class="summary-card">
+                <span class="number">0</span>
+                <div class="label">良好创意 (60-79)</div>
+            </div>
+        </div>
+
+        <div class="hotspots">
+            <h2 style="margin-bottom: 30px; color: #667eea;">📊 热点分析结果</h2>
+            
+    <div class="hotspot-card excellent" data-score="90" data-rank="1">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #1</span>
+          <h2>花滑米兰惨案</h2>
+        </div>
+        <div class="card-score">90分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 1,110,164
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 热
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">2026年2月14日</div>
+        <div class="timeline-content">2026年米兰冬季奥运会花样滑冰团体赛决赛中，东道主意大利队及多支热门队伍因冰面质量、裁判判罚争议及多名选手出现重大失误，导致比赛结果出人意料，被媒体和网友称为‘花滑米兰惨案’，迅速引爆全球社交媒体。</div>
+      </div>
+    
+      <div class="timeline-item">
+        <div class="timeline-time">2026年2月13日</div>
+        <div class="timeline-content">米兰冬奥会花样滑冰团体赛决赛举行，现场出现多次选手摔倒、动作失败的情况，赛后关于冰面维护、赛程安排及裁判标准的质疑声四起。</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (2个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">冰鉴 - 智能冰面与运动表现实时监测分析平台</div>
+          <div class="idea-rating excellent">90分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>基于物联网传感器与计算机视觉的冰面温度、硬度、平整度实时监测与预警</li><li>运动员动作捕捉与生物力学分析，评估动作风险与完成质量</li><li>多维度数据看板，为赛事组织方、转播方、教练团队及资深冰迷提供深度数据解读</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>大型冰雪赛事主办方、专业冰雪运动场馆运营方、国家及地方运动队教练与科研团队、体育媒体与转播机构、高粘性的资深冰雪运动爱好者。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>2026米兰冬奥会暴露出的冰面与判罚争议，凸显了冰雪运动对客观、精准、实时数据支持的迫切需求。后冬奥时代，全球冰雪产业持续升温，赛事专业化、科技化运营成为刚需。该产品可服务于未来国内外各级别赛事与训练，提升比赛公平性与观赏性，市场潜力巨大。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 72/80 + 有用度 18/20
+        </div>
+      </div>
+    
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">心境滑手 - 运动员心理韧性训练与公众情绪疏导互动平台</div>
+          <div class="idea-rating excellent">81分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>为运动员提供基于VR模拟和生物反馈的高压赛场心理适应训练模块</li><li>赛后为运动员提供匿名心理支持与专业疏导资源对接</li><li>面向公众的‘情绪共鸣’社区，通过结构化话题引导理性讨论，转化赛事争议焦点为对运动科学的普及与对运动员的理解支持</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>专业运动员及青少年运动员、运动队心理辅导师、关注运动员身心健康的体育迷、特别是在重大赛事期间情绪被赛事结果强烈影响的泛体育观众。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>‘惨案’类事件往往伴随对运动员的巨大心理冲击和网络上的极端情绪。产品切入日益受重视的运动心理保障领域，同时管理赛事衍生的公众情绪，创造积极的社会价值。可结合体育协会、俱乐部及体育媒体进行推广，商业模式可包括B端服务订阅、C端轻度付费内容及公益合作。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 65/80 + 有用度 16/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card excellent" data-score="88" data-rank="2">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #2</span>
+          <h2>羽生结弦的含金量还在上升</h2>
+        </div>
+        <div class="card-score">88分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 794,155
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 无
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">2026年1月15日</div>
+        <div class="timeline-content">羽生结弦在2026年米兰-科尔蒂纳冬奥会花样滑冰表演滑中，以特邀传奇嘉宾身份压轴出场，演绎全新编排节目，引发全球社交媒体热议，其‘GOAT’（史上最佳）地位再次被广泛讨论。</div>
+      </div>
+    
+      <div class="timeline-item">
+        <div class="timeline-time">2026年1月20日</div>
+        <div class="timeline-content">国际滑联（ISU）发布2025-2026赛季花样滑冰项目全球影响力报告，数据显示羽生结弦虽已退役，但其相关赛事转播收视率、商业代言品牌价值及社交媒体话题度仍位居现役及退役运动员榜首，‘羽生效应’持续显现。</div>
+      </div>
+    
+      <div class="timeline-item">
+        <div class="timeline-time">2026年2月10日</div>
+        <div class="timeline-content">一部深度记录羽生结弦职业生涯与艺术追求的纪录片《永恒的轨迹》在全球流媒体平台上线，首周播放量破纪录，并带动其历史比赛视频、周边产品销量新一轮增长，‘含金量’话题再度冲上热搜。</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (2个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">AuraTrace - 名人数字遗产与影响力动态评估平台</div>
+          <div class="idea-rating excellent">88分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>基于AI的名人全网影响力指数实时追踪与可视化</li><li>‘影响力资产’预测模型，分析事件、作品对名人长期价值的影响</li><li>面向粉丝的‘影响力贡献度’互动模块，可参与话题、二创助力</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>体育、娱乐明星的经纪团队、品牌市场营销人员、投资机构（用于评估代言价值）、核心粉丝群体及媒体分析师。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>在注意力经济时代，名人（尤其是退役传奇人物）的长期商业价值评估缺乏动态、量化的工具。羽生结弦案例表明，顶级运动员的‘职业后含金量’是巨大蓝海。该平台可满足品牌方精准投放、经纪团队价值维护、粉丝情感投射与参与感的多方需求，填补市场空白。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 72/80 + 有用度 16/20
+        </div>
+      </div>
+    
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">Momentum Coach - 基于传奇运动员‘心流’数据的沉浸式训练辅助APP</div>
+          <div class="idea-rating excellent">83分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>通过VR/AR技术复现羽生结弦等传奇运动员关键比赛/训练场景的第一视角</li><li>整合公开的传记、访谈数据，生成‘心智训练’语音指导模块</li><li>将运动员的动作美学数据（如跳跃节奏、滑行轨迹）转化为用户可感知的视觉化反馈与游戏化训练目标</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>花样滑冰、体操、舞蹈等技巧与艺术结合项目的青少年及业余爱好者、追求训练方法创新的体育教练、对‘冠军心智’感兴趣的个人发展学习者。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>传统训练APP侧重于生理数据与标准化动作。本产品挖掘传奇运动员的‘无形资产’（心理状态、艺术表达、独特节奏感），将其转化为可体验、可学习的内容。借助羽生结弦等标志性人物持续上升的关注度，切入垂直体育培训与心智成长市场的结合部，具有高溢价潜力。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 68/80 + 有用度 15/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card normal" data-score="0" data-rank="3">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #3</span>
+          <h2>家是最柔软的方向</h2>
+        </div>
+        <div class="card-score">0分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 652,775
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 新
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">未知</div>
+        <div class="timeline-content">分析失败: Unexpected token &#039;“&#039;, ...&quot;一室’的临场感&quot;, “家庭数字仪式感工具&quot;... is not valid JSON</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (1个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">分析失败</div>
+          <div class="idea-rating normal">0分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>无法生成</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>未知</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>分析失败</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 0/80 + 有用度 0/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+        </div>
+    </div>
+</body>
+</html>
