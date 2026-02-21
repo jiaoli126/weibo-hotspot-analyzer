@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>微博热搜产品创意分析报告</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px;
+            text-align: center;
+            color: white;
+        }
+        .header h1 { font-size: 36px; margin-bottom: 10px; }
+        .header .subtitle { font-size: 18px; opacity: 0.9; }
+        .summary {
+            padding: 30px;
+            background: #f8f9fa;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .summary-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        .summary-card .number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #667eea;
+            display: block;
+        }
+        .summary-card .label { font-size: 14px; color: #666; margin-top: 5px; }
+        .hotspots { padding: 30px; }
+        .hotspot-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+        .hotspot-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        .hotspot-card.excellent {
+            border-color: #4caf50;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+        }
+        .hotspot-card.good {
+            border-color: #2196f3;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        }
+        .hotspot-card.normal {
+            border-color: #9e9e9e;
+            background: #f5f5f5;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .card-header h2 { font-size: 24px; flex: 1; }
+        .card-rank { font-size: 18px; color: #666; margin-right: 20px; }
+        .card-score {
+            font-size: 28px;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 50px;
+            color: white;
+        }
+        .hotspot-card.excellent .card-score { background: #4caf50; }
+        .hotspot-card.good .card-score { background: #2196f3; }
+        .hotspot-card.normal .card-score { background: #9e9e9e; }
+        .hotspot-meta {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #666;
+        }
+        .meta-item .label { font-weight: 500; }
+        .event-timeline {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid #667eea;
+        }
+        .event-timeline h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+        .timeline-item {
+            display: flex;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .timeline-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .timeline-time {
+            font-weight: bold;
+            color: #667eea;
+            min-width: 120px;
+        }
+        .timeline-content { flex: 1; padding-left: 20px; }
+        .product-ideas-section h3 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .product-idea {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border-left: 5px solid #667eea;
+        }
+        .idea-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+        .idea-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        .idea-rating {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+        }
+        .idea-rating.excellent { background: #4caf50; }
+        .idea-rating.good { background: #2196f3; }
+        .idea-rating.normal { background: #9e9e9e; }
+        .idea-section { margin-bottom: 15px; }
+        .idea-section h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        .idea-section p, .idea-section ul {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #444;
+        }
+        .idea-section ul { padding-left: 20px; }
+        .idea-section li { margin-bottom: 5px; }
+        .criteria-breakdown {
+            background: #f5f5f5;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #666;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 微博热搜产品创意分析报告</h1>
+            <p class="subtitle">基于微博实时热搜数据的产品创意挖掘分析（GitHub Models 驱动）</p>
+            <p class="subtitle">生成时间: 2026/02/21 11:31:37</p>
+        </div>
+
+        <div class="summary">
+            <div class="summary-card">
+                <span class="number">3</span>
+                <div class="label">分析热点数</div>
+            </div>
+            <div class="summary-card">
+                <span class="number">6</span>
+                <div class="label">生成创意数</div>
+            </div>
+            <div class="summary-card">
+                <span class="number">3</span>
+                <div class="label">优秀创意 (80+)</div>
+            </div>
+            <div class="summary-card">
+                <span class="number">0</span>
+                <div class="label">良好创意 (60-79)</div>
+            </div>
+        </div>
+
+        <div class="hotspots">
+            <h2 style="margin-bottom: 30px; color: #667eea;">📊 热点分析结果</h2>
+            
+    <div class="hotspot-card excellent" data-score="91" data-rank="2">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #2</span>
+          <h2>迎财神</h2>
+        </div>
+        <div class="card-score">91分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 817,594
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 无
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">2026年2月21日</div>
+        <div class="timeline-content">农历正月初五，社交媒体平台‘迎财神’话题热度飙升，大量用户分享迎财神习俗、祈福图文及短视频，形成线上民俗文化热潮。</div>
+      </div>
+    
+      <div class="timeline-item">
+        <div class="timeline-time">2026年1月回顾2025年事件</div>
+        <div class="timeline-content">2025年春节期间，多家科技公司推出AR/VR祈福应用，结合传统习俗与数字技术，用户参与度创新高，为2026年相关产品发展奠定基础。</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (2个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">财神AR祈福助手</div>
+          <div class="idea-rating excellent">91分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>AR实景迎财神互动</li><li>个性化数字祈福卡片生成与分享</li><li>结合LBS的虚拟财神巡游与红包雨活动</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>18-35岁对传统文化感兴趣、热衷社交媒体分享的年轻用户，尤其是一二线城市的数字原住民。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>传统民俗数字化趋势明显，AR技术普及度提高，春节期间的社交互动需求旺盛。可结合电商、品牌营销实现商业化，如虚拟供品兑换、品牌合作祈福活动。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 75/80 + 有用度 16/20
+        </div>
+      </div>
+    
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">智能民俗文化日历与社区</div>
+          <div class="idea-rating excellent">80分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>基于农历的传统节日与习俗提醒与解读</li><li>UGC祈福许愿墙与经验分享社区</li><li>与线下寺庙、文化场所联动的线上预约与体验</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>对传统文化有认知或学习需求的城市中青年家庭、海外华人及中国文化爱好者。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>随着文化自信提升，系统化、便捷化的民俗知识服务存在缺口。可通过内容订阅、活动票务、文化周边电商等模式变现，满足用户精神文化消费需求。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 65/80 + 有用度 15/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card excellent" data-score="91" data-rank="3">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #3</span>
+          <h2>中国非遗给你亿点点震撼</h2>
+        </div>
+        <div class="card-score">91分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 641,801
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 无
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">2026年1月15日</div>
+        <div class="timeline-content">2026年1月回顾2025年事件：国家文旅部联合多家短视频平台发起‘非遗焕新计划’，通过数字化手段和年轻化表达，推动非遗项目在社交媒体上形成现象级传播，相关话题累计播放量超百亿。</div>
+      </div>
+    
+      <div class="timeline-item">
+        <div class="timeline-time">2026年2月18日</div>
+        <div class="timeline-content">央视推出《非遗里的中国》新春特别节目，运用XR虚拟现实技术沉浸式展示多项非遗技艺，节目播出后‘中国非遗给你亿点点震撼’话题迅速登上微博热搜榜首。</div>
+      </div>
+    
+      <div class="timeline-item">
+        <div class="timeline-time">2026年2月20日</div>
+        <div class="timeline-content">多家博物馆、非遗工坊与科技公司宣布合作，将利用AI生成、数字孪生等技术对濒危非遗项目进行高精度数字化存档与创新演绎，引发公众对非遗未来形态的广泛讨论。</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (2个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">非遗数字工坊</div>
+          <div class="idea-rating excellent">91分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>AI辅助非遗技艺学习与模拟创作</li><li>基于区块链的非遗数字藏品（NFT）铸造与交易</li><li>连接非遗传承人与爱好者的线上共创社区与直播工坊</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>对传统文化感兴趣的Z世代及年轻白领（18-35岁）、非遗爱好者、手工艺创作者、文旅行业从业者、中小学及高校美育教育工作者。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>在文化自信提升和国潮兴起的背景下，非遗的数字化、年轻化转型是明确趋势。该产品将非遗的保护、传承与当代数字消费（如数字藏品、虚拟体验）和兴趣学习相结合，既能响应政策号召，又能切入正在快速增长的数字文创和在线知识付费市场。技术层面，AI和区块链已相对成熟，具备可行性。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 75/80 + 有用度 16/20
+        </div>
+      </div>
+    
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">幻境非遗·AR时空旅行仪</div>
+          <div class="idea-rating excellent">85分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>基于LBS和AR技术，在现实场景中叠加历史非遗活动虚拟影像</li><li>沉浸式非遗故事线互动体验，用户可‘参与’历史技艺制作过程</li><li>线上线下联动，扫描特定实物（如文物、地标）解锁独家非遗数字内容与周边权益</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>亲子家庭、学生群体、文化旅游者、城市探索爱好者、线下文旅景区与商业综合体。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>将非遗从静态展示变为动态的、可参与的沉浸式体验，完美契合‘文旅融合’与‘体验经济’的需求。产品可作为线下景区、博物馆、历史文化街区的增值服务或独立APP运营，通过内容订阅、线下导流分成、联名周边等方式实现商业化。AR技术普及和5G网络为产品提供了良好的技术基础。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 70/80 + 有用度 15/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card excellent" data-score="88" data-rank="1">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #1</span>
+          <h2>王濛说签生死状复出</h2>
+        </div>
+        <div class="card-score">88分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 1,148,159
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 热
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">2026年2月21日</div>
+        <div class="timeline-content">前短道速滑奥运冠军王濛在社交媒体直播中表示，为了重返赛场，愿意签署‘生死状’，以表达其克服年龄与伤病障碍、追求竞技梦想的决心，引发全网热议。</div>
+      </div>
+    
+      <div class="timeline-item">
+        <div class="timeline-time">2026年1月回顾2022年事件</div>
+        <div class="timeline-content">王濛在2022年北京冬奥会期间因激情解说与专业洞察力火爆出圈，其‘我的眼睛就是尺’等金句成为网络流行语，奠定了其作为体坛标志性人物的公众影响力。</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (2个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">「极限契约」—— 个人目标挑战与风险承诺数字化平台</div>
+          <div class="idea-rating excellent">88分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>定制化‘数字契约’生成器，支持用户为健身、学习、职业突破等目标设定公开承诺与象征性‘风险条款’</li><li>契约履行进度追踪与社群见证系统，融合打卡、视频记录与好友监督</li><li>与保险机构或公益基金合作，设置‘履约成功奖励池’或‘违约捐赠机制’，将个人挑战与社会价值联动</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>追求自我突破、需要外部动力约束的Z世代及年轻职场人；健身爱好者、备考学生、创业初期者等有明确阶段性目标的群体；关注体育精神、励志故事的内容消费者与参与者。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>王濛事件凸显了公众对‘超越极限、郑重承诺’精神的强烈共鸣。在2026年，数字化自律工具与体验经济结合趋势明显。该产品将‘承诺仪式感’、‘社交监督’与‘轻度博弈’机制融合，切入快速增长的个人成长与健康管理市场，并可衍生内容、电商（挑战装备）、品牌联名（如运动品牌）等商业化路径。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 72/80 + 有用度 16/20
+        </div>
+      </div>
+    
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">「传奇再启」—— 退役体育明星复出/跨界赋能综合服务</div>
+          <div class="idea-rating good">79分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>为退役运动员提供复出可行性智能评估系统，整合身体数据、项目趋势、商业价值分析</li><li>复出训练计划定制与顶尖教练、康复资源对接平台</li><li>粉丝众筹与品牌赞助对接模块，将公众关注直接转化为复出支持资源</li><li>复出历程纪录片式跟拍与内容分发服务，打造叙事IP</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>有强烈意愿重返赛场或进行职业转型（如跨界参赛）的退役运动员；体育经纪公司与俱乐部；热衷于赞助‘励志故事’的品牌方；深度体育迷与情怀消费群体。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>王濛的‘生死状’言论是运动员个人意志与公众期待的极端体现，反映了‘传奇复出’市场的潜在需求。在2026年体育产业精细化运营背景下，针对退役运动员二次职业发展的专业服务缺口明显。此产品通过技术、资源、资金、内容包装的一站式解决方案，可创造新的体育经纪模式与内容IP，商业潜力在于服务佣金、赞助分成与内容收益。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 65/80 + 有用度 14/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+        </div>
+    </div>
+</body>
+</html>
