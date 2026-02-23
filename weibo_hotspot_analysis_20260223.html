@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>微博热搜产品创意分析报告</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px;
+            text-align: center;
+            color: white;
+        }
+        .header h1 { font-size: 36px; margin-bottom: 10px; }
+        .header .subtitle { font-size: 18px; opacity: 0.9; }
+        .summary {
+            padding: 30px;
+            background: #f8f9fa;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .summary-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        .summary-card .number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #667eea;
+            display: block;
+        }
+        .summary-card .label { font-size: 14px; color: #666; margin-top: 5px; }
+        .hotspots { padding: 30px; }
+        .hotspot-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+        .hotspot-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        .hotspot-card.excellent {
+            border-color: #4caf50;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+        }
+        .hotspot-card.good {
+            border-color: #2196f3;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        }
+        .hotspot-card.normal {
+            border-color: #9e9e9e;
+            background: #f5f5f5;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .card-header h2 { font-size: 24px; flex: 1; }
+        .card-rank { font-size: 18px; color: #666; margin-right: 20px; }
+        .card-score {
+            font-size: 28px;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 50px;
+            color: white;
+        }
+        .hotspot-card.excellent .card-score { background: #4caf50; }
+        .hotspot-card.good .card-score { background: #2196f3; }
+        .hotspot-card.normal .card-score { background: #9e9e9e; }
+        .hotspot-meta {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #666;
+        }
+        .meta-item .label { font-weight: 500; }
+        .event-timeline {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid #667eea;
+        }
+        .event-timeline h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+        .timeline-item {
+            display: flex;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .timeline-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .timeline-time {
+            font-weight: bold;
+            color: #667eea;
+            min-width: 120px;
+        }
+        .timeline-content { flex: 1; padding-left: 20px; }
+        .product-ideas-section h3 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .product-idea {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border-left: 5px solid #667eea;
+        }
+        .idea-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+        .idea-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        .idea-rating {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+        }
+        .idea-rating.excellent { background: #4caf50; }
+        .idea-rating.good { background: #2196f3; }
+        .idea-rating.normal { background: #9e9e9e; }
+        .idea-section { margin-bottom: 15px; }
+        .idea-section h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        .idea-section p, .idea-section ul {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #444;
+        }
+        .idea-section ul { padding-left: 20px; }
+        .idea-section li { margin-bottom: 5px; }
+        .criteria-breakdown {
+            background: #f5f5f5;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #666;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 微博热搜产品创意分析报告</h1>
+            <p class="subtitle">基于微博实时热搜数据的产品创意挖掘分析（GitHub Models 驱动）</p>
+            <p class="subtitle">生成时间: 2026/02/23 11:48:02</p>
+        </div>
+
+        <div class="summary">
+            <div class="summary-card">
+                <span class="number">3</span>
+                <div class="label">分析热点数</div>
+            </div>
+            <div class="summary-card">
+                <span class="number">6</span>
+                <div class="label">生成创意数</div>
+            </div>
+            <div class="summary-card">
+                <span class="number">3</span>
+                <div class="label">优秀创意 (80+)</div>
+            </div>
+            <div class="summary-card">
+                <span class="number">0</span>
+                <div class="label">良好创意 (60-79)</div>
+            </div>
+        </div>
+
+        <div class="hotspots">
+            <h2 style="margin-bottom: 30px; color: #667eea;">📊 热点分析结果</h2>
+            
+    <div class="hotspot-card excellent" data-score="88" data-rank="2">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #2</span>
+          <h2>徐梦桃夺冠当天收到1600多条信息</h2>
+        </div>
+        <div class="card-score">88分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 800,717
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 新
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">2026年1月</div>
+        <div class="timeline-content">2026年1月回顾2022年北京冬奥会自由式滑雪女子空中技巧冠军徐梦桃夺冠事件。据媒体报道，她在夺冠当天收到了超过1600条祝贺信息，引发了公众对于名人/运动员在重大时刻面临信息过载的关注。</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (2个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">高光时刻信息管家</div>
+          <div class="idea-rating excellent">88分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>智能信息分类与聚合</li><li>一键感谢/批量回复模板</li><li>亲友/重要联系人优先级置顶</li><li>情绪分析与祝福语摘要生成</li><li>信息流时间线回顾</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>公众人物（如运动员、艺人、企业家）、在特定时刻（如升学、晋升、获奖）会收到海量信息的行业精英、以及他们的经纪或助理团队。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>在社交媒体和即时通讯高度发达的2026年，个人在重要成就时刻面临‘幸福的烦恼’——信息过载导致难以有效回应和留存珍贵祝福。该产品切入细分的情感管理与效率工具市场，可与个人品牌管理、粉丝运营服务结合，具有明确的付费场景（如按次或订阅服务）。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 72/80 + 有用度 16/20
+        </div>
+      </div>
+    
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">心流纪念册</div>
+          <div class="idea-rating excellent">80分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>自动抓取特定时间节点的全平台祝福信息</li><li>AI提炼核心情感与关键词生成视觉卡片</li><li>支持定制化实体纪念册印制</li><li>隐私保护与授权管理</li><li>与亲友共享的私密纪念空间</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>注重生活仪式感与情感记录的用户，特别是经历过重大人生节点（如夺冠、毕业、结婚、生子）的普通人及轻度公众人物。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>迎合2026年用户对数字化情感资产留存和实体化珍藏的需求。将瞬间的海量信息转化为永久的、艺术化的纪念品，融合了数字内容管理、轻量级AI设计和个性化电商的商业模式。市场潜力在于情感消费和个性化定制赛道。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 65/80 + 有用度 15/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card excellent" data-score="88" data-rank="3">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #3</span>
+          <h2>中国红闪耀米兰冬奥闭幕式</h2>
+        </div>
+        <div class="card-score">88分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 639,458
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 无
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">2026年2月22日</div>
+        <div class="timeline-content">米兰冬奥会闭幕式举行，中国代表团身着‘中国红’主题服饰亮相，相关视觉元素在国内外社交媒体引发广泛传播与讨论。</div>
+      </div>
+    
+      <div class="timeline-item">
+        <div class="timeline-time">2026年1月</div>
+        <div class="timeline-content">2026年1月回顾2022年北京冬奥会闭幕式，对比分析两届冬奥会中国元素的呈现方式与全球反响。</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (2个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">国潮AR互动服饰平台</div>
+          <div class="idea-rating excellent">88分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>AR试穿体验‘中国红’等主题虚拟服饰</li><li>用户生成内容（UGC）虚拟时装设计社区</li><li>与大型体育赛事、文化IP联名推出限量数字藏品</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>关注国潮文化、热衷体育赛事、喜爱在社交平台分享的Z世代及年轻消费群体；对数字时尚和虚拟身份有需求的元宇宙早期用户。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>米兰冬奥会‘中国红’引发的热议，显示了民族自豪感与时尚消费的结合点。数字时尚市场在2026年已初具规模，结合AR试穿和UGC设计，能降低实体消费门槛，满足年轻人个性化表达和社交分享需求，同时顺应虚拟经济与实体品牌联动的趋势。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 72/80 + 有用度 16/20
+        </div>
+      </div>
+    
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">赛事文化情绪感知与内容聚合器</div>
+          <div class="idea-rating excellent">83分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>实时抓取并分析全球主流社交平台对特定赛事/文化事件（如‘中国红’）的情绪反馈与话题热度</li><li>生成可视化情绪地图与传播报告</li><li>聚合高质量UGC图片、视频内容，提供一键式内容创作素材包</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>品牌市场部门、媒体机构、内容创作者、体育文化研究者，需要快速把握公众情绪和话题风向进行决策或内容生产的专业人士。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>大型国际赛事是全民情绪和注意力汇聚的高峰。2026年，信息过载问题更甚，市场对高效、精准的舆情洞察和高质量内容素材有强烈需求。此产品能帮助品牌借势营销，帮助媒体和创作者快速产出共鸣内容，商业化路径清晰（SaaS订阅、数据报告、素材授权）。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 65/80 + 有用度 18/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card excellent" data-score="81" data-rank="1">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #1</span>
+          <h2>墨西哥毒枭身亡引发报复行动</h2>
+        </div>
+        <div class="card-score">81分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 1,090,688
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 新
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">2026年2月22日</div>
+        <div class="timeline-content">墨西哥主要贩毒集团头目‘El Comandante’在锡那罗亚州的一次军方突袭行动中被击毙。</div>
+      </div>
+    
+      <div class="timeline-item">
+        <div class="timeline-time">2026年2月23日凌晨</div>
+        <div class="timeline-content">贩毒集团宣布对政府和安全部队进行报复，多个城市发生武装袭击、焚烧车辆和针对政府建筑的攻击，社交媒体上出现大量相关视频和威胁信息。</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (2个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">危机哨兵 - 区域安全态势实时感知与预警平台</div>
+          <div class="idea-rating excellent">81分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>基于卫星图像、社交媒体舆情、官方通报的多源数据融合分析</li><li>为特定区域（如工业园区、使馆区、外派人员社区）提供动态安全风险等级与预警推送</li><li>集成一键紧急联络、安全路线规划与避险指南</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>在海外高风险地区运营的企业（如能源、基建、矿业）、外派员工及其家属、外交使领馆安保部门、国际非政府组织、跨国差旅人士。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>随着全球地缘政治紧张和局部冲突风险上升，企业对海外资产与人员安全管理的数字化、实时化需求激增。传统安保咨询信息滞后，此产品能填补实时、数据驱动的主动安全预警市场空白，尤其在拉美、非洲、中东等地区需求明确。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 65/80 + 有用度 16/20
+        </div>
+      </div>
+    
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">信息滤镜 - 高危事件社交媒体内容净化与心理缓冲工具</div>
+          <div class="idea-rating good">72分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>智能识别并模糊化处理社交媒体流中的极端暴力、血腥或引发强烈焦虑的图片与视频</li><li>提供事件关键事实的简洁文字摘要，过滤煽动性言论与谣言</li><li>内置简易心理舒缓指引与专业求助渠道链接</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>关注国际新闻的普通社交媒体用户、对暴力内容敏感的人群（如青少年、创伤后应激障碍者）、希望了解事件但避免直接接触极端内容的公众。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>突发暴力事件常在社交媒体引发“信息海啸”，其中未经处理的极端内容可能造成公众心理创伤与恐慌蔓延。在数字健康与信息伦理日益受重视的背景下，提供一种“可控知情”的工具，满足用户既保持信息连通又保护心理健康的双重需求。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 58/80 + 有用度 14/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+        </div>
+    </div>
+</body>
+</html>
