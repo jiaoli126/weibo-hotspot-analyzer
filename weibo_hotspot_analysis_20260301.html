@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>微博热搜产品创意分析报告</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px;
+            text-align: center;
+            color: white;
+        }
+        .header h1 { font-size: 36px; margin-bottom: 10px; }
+        .header .subtitle { font-size: 18px; opacity: 0.9; }
+        .summary {
+            padding: 30px;
+            background: #f8f9fa;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .summary-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        .summary-card .number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #667eea;
+            display: block;
+        }
+        .summary-card .label { font-size: 14px; color: #666; margin-top: 5px; }
+        .hotspots { padding: 30px; }
+        .hotspot-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+        .hotspot-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        .hotspot-card.excellent {
+            border-color: #4caf50;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+        }
+        .hotspot-card.good {
+            border-color: #2196f3;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        }
+        .hotspot-card.normal {
+            border-color: #9e9e9e;
+            background: #f5f5f5;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .card-header h2 { font-size: 24px; flex: 1; }
+        .card-rank { font-size: 18px; color: #666; margin-right: 20px; }
+        .card-score {
+            font-size: 28px;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 50px;
+            color: white;
+        }
+        .hotspot-card.excellent .card-score { background: #4caf50; }
+        .hotspot-card.good .card-score { background: #2196f3; }
+        .hotspot-card.normal .card-score { background: #9e9e9e; }
+        .hotspot-meta {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #666;
+        }
+        .meta-item .label { font-weight: 500; }
+        .event-timeline {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid #667eea;
+        }
+        .event-timeline h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+        .timeline-item {
+            display: flex;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .timeline-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .timeline-time {
+            font-weight: bold;
+            color: #667eea;
+            min-width: 120px;
+        }
+        .timeline-content { flex: 1; padding-left: 20px; }
+        .product-ideas-section h3 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .product-idea {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border-left: 5px solid #667eea;
+        }
+        .idea-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+        .idea-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        .idea-rating {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+        }
+        .idea-rating.excellent { background: #4caf50; }
+        .idea-rating.good { background: #2196f3; }
+        .idea-rating.normal { background: #9e9e9e; }
+        .idea-section { margin-bottom: 15px; }
+        .idea-section h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        .idea-section p, .idea-section ul {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #444;
+        }
+        .idea-section ul { padding-left: 20px; }
+        .idea-section li { margin-bottom: 5px; }
+        .criteria-breakdown {
+            background: #f5f5f5;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #666;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 微博热搜产品创意分析报告</h1>
+            <p class="subtitle">基于微博实时热搜数据的产品创意挖掘分析（GitHub Models 驱动）</p>
+            <p class="subtitle">生成时间: 2026/03/01 11:48:51</p>
+        </div>
+
+        <div class="summary">
+            <div class="summary-card">
+                <span class="number">3</span>
+                <div class="label">分析热点数</div>
+            </div>
+            <div class="summary-card">
+                <span class="number">6</span>
+                <div class="label">生成创意数</div>
+            </div>
+            <div class="summary-card">
+                <span class="number">3</span>
+                <div class="label">优秀创意 (80+)</div>
+            </div>
+            <div class="summary-card">
+                <span class="number">0</span>
+                <div class="label">良好创意 (60-79)</div>
+            </div>
+        </div>
+
+        <div class="hotspots">
+            <h2 style="margin-bottom: 30px; color: #667eea;">📊 热点分析结果</h2>
+            
+    <div class="hotspot-card excellent" data-score="88" data-rank="1">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #1</span>
+          <h2>哈梅内伊遇害</h2>
+        </div>
+        <div class="card-score">88分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 10,476,199
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 爆
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">2026年1月15日</div>
+        <div class="timeline-content">2026年1月回顾2024年哈梅内伊遇害事件，该事件曾引发全球地缘政治震荡与国际舆论风暴。</div>
+      </div>
+    
+      <div class="timeline-item">
+        <div class="timeline-time">2026年2月28日</div>
+        <div class="timeline-content">某国际媒体发布深度调查报道，重新梳理事件脉络并披露部分未公开细节，引发社交媒体广泛讨论与猜测。</div>
+      </div>
+    
+      <div class="timeline-item">
+        <div class="timeline-time">2026年3月1日</div>
+        <div class="timeline-content">相关话题“哈梅内伊遇害”登上微博热搜榜首，阅读量迅速突破千万，网民围绕事件真相、国际影响及信息真实性展开激烈辩论。</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (2个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">真相雷达 - 国际突发事件可信度分析平台</div>
+          <div class="idea-rating excellent">88分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>多源信息实时抓取与交叉验证</li><li>AI生成可信度评分与风险图谱</li><li>专家观点与官方信源智能标注</li><li>谣言溯源与传播路径可视化</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>关注国际时政的媒体从业者、政策研究者、高校师生、投资机构分析师及普通网民中具备较高信息甄别需求的群体。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>在信息爆炸与地缘冲突频发的2026年，公众对重大国际事件的信息真实性需求激增。传统媒体信源单一，社交媒体谣言泛滥，市场亟需能整合多方信息、提供客观分析的工具类产品。该产品可面向B端（媒体、智库、企业）提供数据服务，同时通过C端高级功能订阅实现商业化。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 72/80 + 有用度 16/20
+        </div>
+      </div>
+    
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">危机推演沙盘 - 地缘政治事件模拟与影响评估系统</div>
+          <div class="idea-rating excellent">83分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>基于历史数据的冲突事件模式库</li><li>自定义变量（政治、经济、军事）的动态推演</li><li>产业链与金融市场波动预测模块</li><li>个性化风险报告自动生成</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>跨国企业战略部门、金融机构风控团队、政府涉外机构、国际关系研究机构及高端个人投资者。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>类似“哈梅内伊遇害”的突发事件对全球供应链、能源市场及金融市场造成瞬时冲击。企业及机构对事前预警与事后快速评估工具存在刚性需求。该系统可作为SaaS服务向企业客户提供，按推演深度与报告粒度分级收费，市场壁垒较高，客户黏性强。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 65/80 + 有用度 18/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card excellent" data-score="88" data-rank="2">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #2</span>
+          <h2>中方呼吁军事行动立即停止</h2>
+        </div>
+        <div class="card-score">88分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 1,992,507
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 无
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">2026年2月28日</div>
+        <div class="timeline-content">某地区紧张局势升级，爆发局部军事冲突，引发国际社会广泛关注。</div>
+      </div>
+    
+      <div class="timeline-item">
+        <div class="timeline-time">2026年3月1日</div>
+        <div class="timeline-content">中国外交部举行紧急记者会，正式呼吁相关各方保持克制，军事行动立即停止，通过对话协商解决争端。该表态迅速成为社交媒体热点。</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (2个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">和平之声 - 全球冲突动态与和解平台</div>
+          <div class="idea-rating excellent">88分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>实时冲突地区动态地图与风险预警</li><li>多语言官方声明与民间观点聚合分析</li><li>基于AI的和平方案模拟与公共对话室</li><li>人道主义援助需求信息对接平台</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>关注国际政治与和平议题的全球网民、记者、研究人员、非政府组织工作者、外交政策学习者以及身处或关心冲突地区的人士。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>在2026年地缘政治不确定性增加的背景下，公众对权威、即时、多维度的冲突信息与和平进程有巨大需求。现有社交媒体信息碎片化且情绪化严重。该产品填补了中立信息整合与建设性对话工具的市场空白，可通过数据服务、高端订阅（深度报告、模拟工具）、与NGO/机构的合作以及谨慎的公益广告实现商业化。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 72/80 + 有用度 16/20
+        </div>
+      </div>
+    
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">共识透镜 - 国际声明与立场智能分析工具</div>
+          <div class="idea-rating excellent">83分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>各国官方声明、决议文本的自动抓取与翻译</li><li>基于NLP的立场点、关键词、情感倾向对比分析</li><li>历史类似事件立场变迁图谱</li><li>定制化简报生成与推送</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>媒体国际新闻编辑、高校国际关系师生、智库研究员、企业战略与风险分析部门、外交事务爱好者。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>面对频繁的国际事件与官方表态，专业用户需要高效工具来快速理解复杂立场、追踪变化趋势。这是一个明确的B2B及高端B2C市场，技术门槛较高但需求刚性。可采用SaaS订阅模式，为机构提供高级分析API和数据服务。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 65/80 + 有用度 18/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card excellent" data-score="88" data-rank="3">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #3</span>
+          <h2>我国综合国力再上新台阶</h2>
+        </div>
+        <div class="card-score">88分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 1,562,138
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 新
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">2026年1月</div>
+        <div class="timeline-content">2026年1月回顾2025年事件：国家统计局发布《2025年国民经济和社会发展统计公报》，多项关键指标显示综合国力在科技、经济、基础设施、国际影响力等方面取得显著跃升，引发全民热议。</div>
+      </div>
+    
+      <div class="timeline-item">
+        <div class="timeline-time">2026年2月28日</div>
+        <div class="timeline-content">国际权威机构发布最新全球综合国力排名报告，中国在多项细分指数（如科技研发投入产出比、数字基础设施覆盖率、高端制造占比）上排名进一步提升，相关话题“我国综合国力再上新台阶”迅速登上微博热搜。</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (2个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">国力感知仪 - 个人综合发展指数助手</div>
+          <div class="idea-rating excellent">88分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>基于公开数据与个人授权信息，生成用户的‘个人综合发展指数’，可视化对比国家宏观进步与个人微观成长</li><li>提供与国家发展重点方向（如绿色能源、人工智能、高端制造）匹配的个人技能提升路径与学习资源推荐</li><li>内置‘国力贡献模拟器’，让用户通过模拟选择（如消费选择、职业规划）看到其行为对国家关键指标的潜在影响</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>关注国家发展、有强烈自我提升意愿和民族自豪感的青年及中年群体（18-45岁），尤其是学生、白领、创业者及政策研究者。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>在国力提升的宏观背景下，个体渴望建立与国家进步的连接感与参与感。现有工具多为宏观数据报道或纯个人管理应用，缺乏将两者有机结合的互动产品。该产品能满足用户的情感归属、自我实现及实用规划需求，可结合内容付费、职业培训导流、企业人才评估服务等模式商业化。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 72/80 + 有用度 16/20
+        </div>
+      </div>
+    
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">新基建体验馆 - AR/VR 国家成就沉浸式展示平台</div>
+          <div class="idea-rating excellent">83分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>利用高精度建模与AR/VR技术，让用户足不出户沉浸式体验国家重大工程（如新一代空间站、特高压电网、量子计算实验室）的内部构造与运作原理</li><li>设置‘国力闯关’游戏化模块，用户需运用不同领域的知识（如工程、物流、外交）解决模拟的国家级挑战</li><li>提供‘时间对比’功能，可切换视角对比同一领域（如交通、通讯）基础设施在过去十年与2026年的巨大变化</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>对科技、工程、国家建设感兴趣的学生群体（尤其是K12及大学生）、科普爱好者、旅游爱好者，以及用于学校爱国主义教育或企业培训的机构用户。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>国力提升的具体成就（尤其是硬核科技与基建）对公众而言存在认知门槛。传统的图文视频报道互动性弱。该产品将晦涩的成就转化为可交互、可探索的沉浸式体验，兼具教育、娱乐和民族自豪感培育功能。可通过设备销售/租赁、内容订阅、B端场馆授权及政府文化项目采购实现盈利。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 68/80 + 有用度 15/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+        </div>
+    </div>
+</body>
+</html>
