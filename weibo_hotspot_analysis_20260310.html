@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>微博热搜产品创意分析报告</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px;
+            text-align: center;
+            color: white;
+        }
+        .header h1 { font-size: 36px; margin-bottom: 10px; }
+        .header .subtitle { font-size: 18px; opacity: 0.9; }
+        .summary {
+            padding: 30px;
+            background: #f8f9fa;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .summary-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        .summary-card .number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #667eea;
+            display: block;
+        }
+        .summary-card .label { font-size: 14px; color: #666; margin-top: 5px; }
+        .hotspots { padding: 30px; }
+        .hotspot-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+        .hotspot-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        .hotspot-card.excellent {
+            border-color: #4caf50;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+        }
+        .hotspot-card.good {
+            border-color: #2196f3;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        }
+        .hotspot-card.normal {
+            border-color: #9e9e9e;
+            background: #f5f5f5;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .card-header h2 { font-size: 24px; flex: 1; }
+        .card-rank { font-size: 18px; color: #666; margin-right: 20px; }
+        .card-score {
+            font-size: 28px;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 50px;
+            color: white;
+        }
+        .hotspot-card.excellent .card-score { background: #4caf50; }
+        .hotspot-card.good .card-score { background: #2196f3; }
+        .hotspot-card.normal .card-score { background: #9e9e9e; }
+        .hotspot-meta {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #666;
+        }
+        .meta-item .label { font-weight: 500; }
+        .event-timeline {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid #667eea;
+        }
+        .event-timeline h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+        .timeline-item {
+            display: flex;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .timeline-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .timeline-time {
+            font-weight: bold;
+            color: #667eea;
+            min-width: 120px;
+        }
+        .timeline-content { flex: 1; padding-left: 20px; }
+        .product-ideas-section h3 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .product-idea {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border-left: 5px solid #667eea;
+        }
+        .idea-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+        .idea-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        .idea-rating {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+        }
+        .idea-rating.excellent { background: #4caf50; }
+        .idea-rating.good { background: #2196f3; }
+        .idea-rating.normal { background: #9e9e9e; }
+        .idea-section { margin-bottom: 15px; }
+        .idea-section h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        .idea-section p, .idea-section ul {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #444;
+        }
+        .idea-section ul { padding-left: 20px; }
+        .idea-section li { margin-bottom: 5px; }
+        .criteria-breakdown {
+            background: #f5f5f5;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #666;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 微博热搜产品创意分析报告</h1>
+            <p class="subtitle">基于微博实时热搜数据的产品创意挖掘分析（GitHub Models 驱动）</p>
+            <p class="subtitle">生成时间: 2026/03/10 11:34:51</p>
+        </div>
+
+        <div class="summary">
+            <div class="summary-card">
+                <span class="number">3</span>
+                <div class="label">分析热点数</div>
+            </div>
+            <div class="summary-card">
+                <span class="number">5</span>
+                <div class="label">生成创意数</div>
+            </div>
+            <div class="summary-card">
+                <span class="number">2</span>
+                <div class="label">优秀创意 (80+)</div>
+            </div>
+            <div class="summary-card">
+                <span class="number">0</span>
+                <div class="label">良好创意 (60-79)</div>
+            </div>
+        </div>
+
+        <div class="hotspots">
+            <h2 style="margin-bottom: 30px; color: #667eea;">📊 热点分析结果</h2>
+            
+    <div class="hotspot-card excellent" data-score="90" data-rank="1">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #1</span>
+          <h2>6G网要来了</h2>
+        </div>
+        <div class="card-score">90分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 1,070,844
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 无
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">2026年1月15日</div>
+        <div class="timeline-content">国际电信联盟（ITU）正式发布6G愿景建议书，为全球6G技术标准制定奠定框架。</div>
+      </div>
+    
+      <div class="timeline-item">
+        <div class="timeline-time">2026年2月28日</div>
+        <div class="timeline-content">中国工业和信息化部宣布，已启动6G技术研发试验，并计划于2030年左右实现商用。</div>
+      </div>
+    
+      <div class="timeline-item">
+        <div class="timeline-time">2026年3月10日</div>
+        <div class="timeline-content">多家科技巨头及研究机构在MWC 2026上展示6G关键技术原型，引发公众对‘6G网要来了’的广泛讨论和期待。</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (2个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">灵境通感社交平台</div>
+          <div class="idea-rating excellent">90分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>基于6G超高带宽与超低延迟，实现多人沉浸式全息投影实时互动</li><li>内置AI情感计算引擎，实时分析并增强互动中的情绪表达与共情体验</li><li>支持跨虚实场景的无缝切换，如将现实会议桌与虚拟数据沙盘融合</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>Z世代及α世代的数字原住民、远程协作的企业团队、寻求深度线上社交与娱乐体验的用户、教育及培训行业从业者。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>6G将带来通信范式的变革，从‘连接信息’到‘连接感官与体验’。在元宇宙概念持续演进的背景下，市场亟需能真正实现‘身临其境’社交与协作的基础应用。此产品抓住了6G核心能力，旨在定义下一代社交与协作标准，潜在市场涵盖消费级社交、企业服务、在线教育等多个万亿级赛道。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 75/80 + 有用度 15/20
+        </div>
+      </div>
+    
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">全域智慧体协同操作系统</div>
+          <div class="idea-rating excellent">83分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>基于6G全域覆盖与海量连接能力，统一纳管城市级的人、机、物（无人机、机器人、传感器、智能汽车等）资源</li><li>AI动态任务调度引擎，根据实时需求（如应急响应、物流配送、城市巡检）自动组织并指挥最优的智能体集群协同作业</li><li>提供开放的API与低代码开发工具，供第三方开发垂直行业协同应用</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>智慧城市运营商、大型物流与电商企业、公共安全与应急管理部门、工业园区及大型基础设施的管理方。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>6G将实现空天地海一体化网络与万物智联。当前智慧城市与产业物联网存在‘数据孤岛’和‘设备烟囱’问题，缺乏一个能实时调度异构、海量智能体资源的‘超级大脑’。此产品瞄准B端与G端市场，解决大规模协同自动化的核心痛点，是推动城市与产业真正迈向智能化的关键基础设施，商业化路径清晰。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 65/80 + 有用度 18/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card excellent" data-score="83" data-rank="2">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #2</span>
+          <h2>物业管理改服务住建部采纳了</h2>
+        </div>
+        <div class="card-score">83分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 770,051
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 无
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">2026年1月15日</div>
+        <div class="timeline-content">住建部正式发布《关于深化物业管理改革提升服务质量的指导意见》，明确将“物业管理”的表述调整为“物业服务”，并纳入2026年重点民生工作。</div>
+      </div>
+    
+      <div class="timeline-item">
+        <div class="timeline-time">2026年2月20日</div>
+        <div class="timeline-content">首批试点城市启动物业服务新标准落地工作，强调业主评价权重，推动物业服务企业从“管理”向“服务”转型。</div>
+      </div>
+    
+      <div class="timeline-item">
+        <div class="timeline-time">2026年3月8日</div>
+        <div class="timeline-content">住建部召开新闻发布会，宣布已采纳并全面推行“物业管理改服务”政策框架，相关配套数字平台建设招标启动。</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (2个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">住好服 - 物业服务透明化与协同平台</div>
+          <div class="idea-rating excellent">83分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>业委会/业主大会线上投票与议事系统</li><li>物业服务标准执行度AI巡检与报告生成</li><li>业主评价与物业费动态浮动挂钩公示模块</li><li>报事报修全流程追踪与第三方仲裁对接通道</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>城市住宅小区业主、业委会成员、物业服务企业项目经理及一线员工、街道/社区基层治理人员。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>政策强制推动物业服务转型，催生对标准化、透明化、数字化工具的巨大需求。全国有数十万个住宅小区，物业费市场规模超万亿，但服务评价和纠纷处理机制原始。此平台可成为政策落地的“基础设施”，从政府采购、物业企业SaaS订阅、业主增值服务等多维度变现。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 65/80 + 有用度 18/20
+        </div>
+      </div>
+    
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">管家喵 - 基于AI的个性化家庭物业助手（C端轻应用）</div>
+          <div class="idea-rating excellent">86分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>语音/图片识别快速报修并自动归类责任方</li><li>自动解析物业合同条款，提醒业主权益与服务盲点</li><li>基于社区公告和用户画像推送个性化生活服务信息</li><li>邻里公共事务讨论与轻量级共识促成工具</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>年轻一代业主、租房客、忙于工作的家庭主力成员。</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>政策将“服务”提到核心，但业主个体感知弱、参与门槛高。瞄准年轻用户“怕麻烦”、“重体验”的心理，通过轻量化、趣味化（如拟人化AI助手）的产品设计，降低参与公共事务的门槛，积累高价值社区流量。可探索与智能家居硬件、社区团购、本地生活服务的整合。</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 70/80 + 有用度 16/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+
+    <div class="hotspot-card normal" data-score="0" data-rank="3">
+      <div class="card-header">
+        <div>
+          <span class="card-rank">热搜 #3</span>
+          <h2>全国两会今日日程</h2>
+        </div>
+        <div class="card-score">0分</div>
+      </div>
+      <div class="hotspot-meta">
+        <div class="meta-item">
+          <span class="label">热度值:</span> 737,915
+        </div>
+        <div class="meta-item">
+          <span class="label">热搜标签:</span> 新
+        </div>
+        <div class="meta-item">
+          <span class="label">分类:</span> unknown
+        </div>
+      </div>
+      
+      
+      <div class="event-timeline">
+        <h3>📅 事件脉络</h3>
+        
+      <div class="timeline-item">
+        <div class="timeline-time">未知</div>
+        <div class="timeline-content">分析失败: Unexpected token &#039;\&#039;, ...&quot;要与可视化解读&quot;, \&quot;个人/企业政策影&quot;... is not valid JSON</div>
+      </div>
+    
+      </div>
+      
+      
+      <div class="product-ideas-section">
+        <h3>💡 产品创意 (1个)</h3>
+        
+      <div class="product-idea">
+        <div class="idea-header">
+          <div class="idea-title">分析失败</div>
+          <div class="idea-rating normal">0分</div>
+        </div>
+        <div class="idea-section">
+          <h4>核心功能</h4>
+          <ul><li>无法生成</li></ul>
+        </div>
+        <div class="idea-section">
+          <h4>目标用户</h4>
+          <p>未知</p>
+        </div>
+        <div class="idea-section">
+          <h4>市场机会</h4>
+          <p>分析失败</p>
+        </div>
+        <div class="criteria-breakdown">
+          创意评分明细：有趣度 0/80 + 有用度 0/20
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  
+        </div>
+    </div>
+</body>
+</html>
